@@ -7,5 +7,5 @@ export const registry = createProviderRegistry({
 //   anthropic,
 
   // register provider with prefix and custom setup:
-    openai,
+  openai,
 });

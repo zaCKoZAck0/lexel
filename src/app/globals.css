@@ -119,4 +119,49 @@
   body {
     @apply bg-background text-foreground;
   }
+  h1 {
+    @apply text-4xl font-bold mb-4 mt-6;
+  }
+  h2 {
+    @apply text-3xl font-semibold mb-4 mt-6;
+  }
+  h3 {
+    @apply text-2xl font-medium mb-4 mt-6;
+  }
+  h4 {
+    @apply text-xl font-medium my-4 mt-6;
+  }
+  h5 {
+    @apply text-lg font-medium my-4 mt-6;
+  }
+  h6 {
+    @apply text-base font-medium my-4 mt-6;
+  }
+  ol {
+    @apply list-decimal list-inside pl-4 my-4;
+  }
+
+  ul {
+    @apply my-4;
+  }
+
+  li {
+    @apply list-item my-4;
+  }
+
+  p {
+    @apply py-2;
+  }
+
+  li p {
+    @apply m-0 inline;
+  }
+
+  li pre {
+    @apply my-4;
+  }
+
+  li::marker {
+    @apply text-muted-foreground inline pl-2;
+  }
 }

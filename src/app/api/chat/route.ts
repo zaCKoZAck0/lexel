@@ -30,7 +30,6 @@ export async function POST(req: Request) {
 
   const stream = createDataStream({
     execute: dataStream => {
-
       const result = streamText({
         model: registry.languageModel('openai:gpt-4o-mini'),
         messages,
