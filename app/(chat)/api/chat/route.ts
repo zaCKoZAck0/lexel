@@ -37,7 +37,7 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import type { ChatModel } from '@/lib/ai/models';
 import type { VisibilityType } from '@/components/visibility-selector';
-import webSearch from '@/lib/ai/tools/web-search';
+import {webSearch} from '@/lib/ai/tools/web-search';
 
 export const maxDuration = 60;
 
@@ -160,13 +160,13 @@ export async function POST(request: Request) {
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: {
             getWeather,
+            webSearch,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
             requestSuggestions: requestSuggestions({
               session,
               dataStream,
             }),
-            webSearch,
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
