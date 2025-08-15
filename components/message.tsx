@@ -9,6 +9,7 @@ import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
+import { WebSearch } from './web-search';
 import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -181,6 +182,28 @@ const PurePreviewMessage = ({
                   return (
                     <div key={toolCallId}>
                       <Weather weatherAtLocation={output} />
+                    </div>
+                  );
+                }
+              }
+
+              if (type === 'tool-webSearch') {
+                const { toolCallId, state } = part;
+
+                if (state === 'input-available') {
+                  const { input } = part;
+                  return (
+                    <div key={toolCallId}>
+                      <WebSearch query={input.query} isLoading={true} />
+                    </div>
+                  );
+                }
+
+                if (state === 'output-available') {
+                  const { input, output } = part;
+                  return (
+                    <div key={toolCallId}>
+                      <WebSearch query={input.query} results={output} />
                     </div>
                   );
                 }
