@@ -3,7 +3,7 @@
 import * as React from 'react';
 import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
+import { badgeVariants } from '@/components/ui/badge';
 import {
   HoverCard,
   HoverCardTrigger,
@@ -47,6 +47,7 @@ export const InlineCitationCard = (props: InlineCitationCardProps) => (
   <HoverCard openDelay={0} closeDelay={0} {...props} />
 );
 
+// Use a real button (styled like a badge) so downstream refs/props expecting a button are valid.
 export type InlineCitationCardTriggerProps = ComponentProps<'button'> & {
   sources: string[];
 };
@@ -54,12 +55,17 @@ export type InlineCitationCardTriggerProps = ComponentProps<'button'> & {
 export const InlineCitationCardTrigger = ({
   sources,
   className,
+  type = 'button',
   ...props
 }: InlineCitationCardTriggerProps) => (
   <HoverCardTrigger asChild>
-    <Badge
-      variant="secondary"
-      className={cn('ml-1 rounded-full', className)}
+    <button
+      type={type}
+      className={cn(
+        badgeVariants({ variant: 'secondary' }),
+        'ml-1 rounded-full',
+        className,
+      )}
       {...props}
     >
       {sources.length ? (
@@ -70,7 +76,7 @@ export const InlineCitationCardTrigger = ({
       ) : (
         'unknown'
       )}
-    </Badge>
+    </button>
   </HoverCardTrigger>
 );
 
