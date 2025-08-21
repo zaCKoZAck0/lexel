@@ -18,6 +18,7 @@ const robotoSlab = Roboto_Slab({
 const ibmPlexMono = IBM_Plex_Mono({
   variable: '--font-mono',
   display: 'swap',
+  subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
 });
 
