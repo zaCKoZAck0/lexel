@@ -1,0 +1,75 @@
+import { getModelDetails } from '@/lib/models/models';
+import { AIMessage } from '@/lib/types/ai-message';
+import { ClockIcon, CpuIcon, BarChart3Icon, ZapIcon } from 'lucide-react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+export function MessageMetadata({ message }: { message: AIMessage }) {
+  const modelName = getModelDetails(message.metadata?.modelId || '')?.name;
+  const totalTokens = message.metadata?.totalTokens;
+  const tokensPerSecond =
+    totalTokens &&
+    message.metadata?.responseEndTimeMs &&
+    message.metadata?.responseStartTimeMs
+      ? totalTokens /
+        ((message.metadata.responseEndTimeMs -
+          message.metadata.responseStartTimeMs) /
+          1000)
+      : 0;
+  const timeToFirstTokenSeconds =
+    ((message.metadata?.responseStartTimeMs || 0) -
+      (message.metadata?.requestStartTimeMs || 0)) /
+    1000;
+
+  return (
+    <div className="flex text-sm text-muted-foreground items-center">
+      {modelName && <p>{modelName}</p>}
+      {(totalTokens || tokensPerSecond || timeToFirstTokenSeconds) && (
+        <Popover>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <CpuIcon className="size-4" />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Stats for Nerds</TooltipContent>
+          </Tooltip>
+          <PopoverContent className="w-64" side="top" align="start">
+            <div className="space-y-2 text-sm">
+              <h4 className="font-medium text-sm">Stats for Nerds</h4>
+              {totalTokens && (
+                <p className="flex items-center gap-2">
+                  <CpuIcon className="size-3" />
+                  {totalTokens} tokens
+                </p>
+              )}
+              {tokensPerSecond && (
+                <p className="flex items-center gap-2">
+                  <ZapIcon className="size-3" />
+                  {tokensPerSecond.toFixed(2)} tokens/sec
+                </p>
+              )}
+              {timeToFirstTokenSeconds && (
+                <p className="flex items-center gap-2">
+                  <ClockIcon className="size-3" />
+                  Time-to-first: {timeToFirstTokenSeconds.toFixed(2)}s
+                </p>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
+    </div>
+  );
+}
