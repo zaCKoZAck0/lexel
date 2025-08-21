@@ -60,9 +60,7 @@ export function MobileSettingsNav() {
                 >
                   <Link href={`/settings/${item.id}`} className="flex gap-3">
                     <Icon className="h-4 w-4 mt-0.5" />
-                    <span className="font-medium">
-                      {item.label}
-                    </span>
+                    <span className="font-medium">{item.label}</span>
                   </Link>
                 </Button>
               );

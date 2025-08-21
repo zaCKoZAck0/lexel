@@ -49,7 +49,11 @@ export function createQueryFunction<TData>(
  */
 export function handleMutationError(error: unknown): string {
   if (error instanceof ApiRequestError) {
-    return (error.body as { message?: string })?.message || error.statusText || 'Request failed';
+    return (
+      (error.body as { message?: string })?.message ||
+      error.statusText ||
+      'Request failed'
+    );
   }
 
   if (error instanceof Error) {

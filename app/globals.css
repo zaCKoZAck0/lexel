@@ -179,19 +179,4 @@
   body {
     @apply bg-background text-foreground;
   }
-
-  /* Apply blur effect to UI elements, excluding primary and secondary backgrounds */
-  [class*="bg-"]:not([class*="bg-primary"]):not([class*="bg-secondary"]):not([class*="bg-transparent"]):not([class*="bg-none"]) {
-    @apply backdrop-blur-sm;
-  }
-
-  /* Apply opacity to background colors while preserving text contrast */
-  [class*="bg-card"],
-  [class*="bg-popover"],
-  [class*="bg-muted"],
-  [class*="bg-accent"],
-  [class*="bg-input"],
-  [class*="bg-background"] {
-    @apply bg-opacity-50;
-  }
 }
