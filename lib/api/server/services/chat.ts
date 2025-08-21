@@ -2,7 +2,7 @@ import { prisma } from '@/prisma';
 import { Chat, Message } from '@prisma/client';
 import { InputJsonValue } from '@prisma/client/runtime/library';
 import { AppError } from '@/lib/api/server/errors';
-import { UIMessagePart, UIDataTypes } from 'ai';
+import { UIMessagePart, UIDataTypes, UITools } from 'ai';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -32,7 +32,7 @@ interface CreateMessageInput {
   chatId: string;
   messageId: string;
   role: string;
-  parts: UIMessagePart<UIDataTypes>[];
+  parts: UIMessagePart<UIDataTypes, UITools>[];
   modelId: string;
   attachmentUrls?: string[];
 }
@@ -143,8 +143,8 @@ export async function updateChatTitle(
     });
   } catch (_error) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (error instanceof AppError) {
-      throw error;
+    if (_error instanceof AppError) {
+      throw _error;
     }
     throw new AppError('Failed to update chat title', 500);
   }
@@ -170,8 +170,8 @@ export async function deleteChat(
     }
   } catch (_error) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (error instanceof AppError) {
-      throw error;
+    if (_error instanceof AppError) {
+      throw _error;
     }
     throw new AppError('Failed to delete chat', 500);
   }
@@ -200,15 +200,15 @@ export async function addMessage(
         id: data.messageId,
         chatId: data.chatId,
         role: data.role,
-        parts: data.parts,
+        parts: data.parts as InputJsonValue,
         modelId: data.modelId,
         attachmentUrls: data.attachmentUrls || [],
       },
     });
   } catch (_error) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (error instanceof AppError) {
-      throw error;
+    if (_error instanceof AppError) {
+      throw _error;
     }
     throw new AppError('Failed to add message', 500);
   }
@@ -261,8 +261,8 @@ export async function saveMessages(data: SaveMessagesInput): Promise<void> {
     });
   } catch (_error) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (error instanceof AppError) {
-      throw error;
+    if (_error instanceof AppError) {
+      throw _error;
     }
     throw new AppError('Failed to save messages', 500);
   }
@@ -287,8 +287,8 @@ export async function deleteMessages(messageIds: string[]): Promise<void> {
     });
   } catch (_error) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (error instanceof AppError) {
-      throw error;
+    if (_error instanceof AppError) {
+      throw _error;
     }
     throw new AppError('Failed to delete messages', 500);
   }

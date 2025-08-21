@@ -156,7 +156,6 @@ export async function POST(req: Request) {
       model: getRegistryModel({
         modelId,
         providerApiKey: providerApiKey.key,
-        responseType: 'text',
       }),
       system: getSystemPrompt({
         modelName: model.name,

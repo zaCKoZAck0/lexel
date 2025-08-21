@@ -179,7 +179,7 @@ function ApiKeyRow({ apiKey, providerName }: ApiKeyRowProps) {
         queryClient.setQueryData(apiKeyQueryKeys.all, ctx.previousKeys);
       const msg =
         error instanceof ApiRequestError
-          ? error.body?.message || error.statusText
+          ? (error.body as { message?: string })?.message || error.statusText
           : 'Failed to delete API key';
       toast.error(msg);
     },
@@ -212,7 +212,7 @@ function ApiKeyRow({ apiKey, providerName }: ApiKeyRowProps) {
         queryClient.setQueryData(apiKeyQueryKeys.all, ctx.previousKeys);
       const msg =
         error instanceof ApiRequestError
-          ? error.body?.message || error.statusText
+          ? (error.body as { message?: string })?.message || error.statusText
           : 'Failed to set default API key';
       toast.error(msg);
     },

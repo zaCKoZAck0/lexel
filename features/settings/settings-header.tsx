@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Mail, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'next-auth/react';
-import { MobileSettingsNav } from './mobile-nav';
+import { MobileNav } from './mobile-nav';
 
 interface SettingsHeaderProps {
   user: User;
@@ -26,7 +26,7 @@ export function SettingsHeader({ user }: SettingsHeaderProps) {
       <CardContent className="px-5 flex md:flex-row-reverse flex-col gap-4">
         <div className="flex items-center gap-5">
           <div className="flex items-center justify-between w-full">
-            <MobileSettingsNav />
+            <MobileNav />
             <Button variant="outline" onClick={() => signOut()}>
               Sign Out
             </Button>

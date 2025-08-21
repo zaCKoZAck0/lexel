@@ -332,31 +332,21 @@ const components: Options['components'] = {
     if (
       isValidElement(children) &&
       children.props &&
-      typeof children.props.children === 'string'
+      typeof (children.props as { children?: unknown }).children === 'string'
     ) {
-      code = children.props.children;
+      code = (children.props as { children: string }).children;
     } else if (typeof children === 'string') {
       code = children;
     }
 
     return (
-      // <CodeBlock
-      //   className={cn('my-4 h-auto', className)}
-      //   code={code}
-      //   language={language}
-      // >
-      //   <CodeBlockCopyButton
-      //     onCopy={() => console.log('Copied code to clipboard')}
-      //     onError={() => console.error('Failed to copy code to clipboard')}
-      //   />
-      // </CodeBlock>
       <CodeBlock
         code={code}
         language={language}
         className={cn('my-4 h-auto', className)}
       >
         <CodeBlockWrapButton />
-        <CodeBlockDownloadButton filename="my-code.js" />
+        <CodeBlockDownloadButton />
         <CodeBlockCopyButton />
       </CodeBlock>
     );

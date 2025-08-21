@@ -14,7 +14,7 @@ import { settingsNavItems } from './nav-items';
 import { cn } from '@/lib/utils/utils';
 import { Menu } from 'lucide-react';
 
-export function MobileSettingsNav() {
+export function MobileNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 

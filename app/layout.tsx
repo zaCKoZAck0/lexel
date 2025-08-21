@@ -12,6 +12,7 @@ const manrope = Manrope({
 const robotoSlab = Roboto_Slab({
   variable: '--font-serif',
   display: 'swap',
+  subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
 });
 

@@ -86,7 +86,7 @@ export function EditApiKeyDialog({
         queryClient.setQueryData(apiKeyQueryKeys.all, ctx.previous);
       const msg =
         error instanceof ApiRequestError
-          ? error.body?.message || error.statusText
+          ? (error.body as { message?: string })?.message || error.statusText
           : 'Failed to update API key';
       toast.error(msg);
     },
