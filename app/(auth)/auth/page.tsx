@@ -1,32 +1,25 @@
-import { auth, signIn } from "@/lib/auth";
-import { URLS } from "@/lib/config";
-import { redirect } from "next/navigation";
+import { auth } from '@/lib/auth/auth';
+import { URLS } from '@/lib/config/config';
+import { redirect } from 'next/navigation';
+import { LoginPage } from '@/components/auth/login-page';
 
 export default async function AuthPage({
-    searchParams,
+  searchParams,
 }: {
-    searchParams: Promise<{ redirect?: string }>
+  searchParams: Promise<{ redirect?: string }>;
 }) {
-    const session = await auth();
-    if (session) {
-        redirect(URLS.userProfile);
-    }
+  const session = await auth();
+  if (session) {
+    redirect(URLS.userProfile);
+  }
 
-    const { redirect: redirectParam } = await searchParams;
+  const { redirect: redirectParam } = await searchParams;
 
-    // Sanitize and validate redirect parameter, default to "/"
-    const redirectTo = redirectParam && redirectParam.startsWith('/') ? redirectParam : URLS.defaultRedirect;
+  // Sanitize and validate redirect parameter, default to "/"
+  const redirectTo =
+    redirectParam && redirectParam.startsWith('/')
+      ? redirectParam
+      : URLS.defaultRedirect;
 
-    return (
-        <form
-            action={
-                async () => {
-                    "use server";
-                    await signIn("github", { redirectTo });
-                }
-            }
-        >
-            <button>Sign in with GitHub</button>
-        </form>
-    );
+  return <LoginPage redirectTo={redirectTo} />;
 }
