@@ -76,7 +76,7 @@ export function AddApiKeyDialog({ disabled = false }: { disabled?: boolean }) {
       }
       const msg =
         error instanceof ApiRequestError
-          ? error.body?.message || error.statusText
+          ? (error.body as { message?: string })?.message || error.statusText
           : 'Failed to create API key';
       toast.error(msg);
     },

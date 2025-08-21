@@ -44,7 +44,7 @@ export async function apiRequest<T>(
       throw new ApiRequestError(response.status, response.statusText, data);
     }
 
-    return data;
+    return data as T;
   } catch (error) {
     if (error instanceof ApiRequestError) {
       throw error;
