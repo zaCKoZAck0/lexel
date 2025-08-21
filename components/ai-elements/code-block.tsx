@@ -18,9 +18,21 @@ import {
   UnfoldHorizontalIcon,
 } from 'lucide-react';
 import type { ComponentProps, HTMLAttributes, ReactNode } from 'react';
-import { createContext, useContext, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+} from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { nord, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+type SupportedLanguage = {
+  value: string;
+  label: string;
+  extension: string;
+};
 
 type CodeBlockContextType = {
   code: string;
@@ -46,33 +58,60 @@ export type CodeBlockProps = HTMLAttributes<HTMLDivElement> & {
   allowLanguageChange?: boolean;
 };
 
-// Common programming languages for the select dropdown
-const SUPPORTED_LANGUAGES = [
-  { value: 'javascript', label: 'JavaScript' },
-  { value: 'typescript', label: 'TypeScript' },
-  { value: 'python', label: 'Python' },
-  { value: 'java', label: 'Java' },
-  { value: 'cpp', label: 'C++' },
-  { value: 'c', label: 'C' },
-  { value: 'csharp', label: 'C#' },
-  { value: 'php', label: 'PHP' },
-  { value: 'ruby', label: 'Ruby' },
-  { value: 'go', label: 'Go' },
-  { value: 'rust', label: 'Rust' },
-  { value: 'html', label: 'HTML' },
-  { value: 'css', label: 'CSS' },
-  { value: 'scss', label: 'SCSS' },
-  { value: 'json', label: 'JSON' },
-  { value: 'xml', label: 'XML' },
-  { value: 'yaml', label: 'YAML' },
-  { value: 'markdown', label: 'Markdown' },
-  { value: 'bash', label: 'Bash' },
-  { value: 'sql', label: 'SQL' },
-  { value: 'dockerfile', label: 'Dockerfile' },
-  { value: 'nginx', label: 'Nginx' },
-  { value: 'apache', label: 'Apache' },
-  { value: 'plaintext', label: 'Plain Text' },
+// Constants for styling and configuration
+const FLOATING_HEADER_STYLES = 'absolute top-0 left-0 z-10';
+const FLOATING_ACTIONS_STYLES =
+  'absolute top-2 right-2 z-10 flex items-center gap-1';
+const BACKDROP_STYLES = 'bg-muted/80 backdrop-blur-sm';
+const BUTTON_STYLES = `${BACKDROP_STYLES} hover:bg-muted border-0 text-muted-foreground hover:text-foreground`;
+
+// Syntax highlighter common props
+const SYNTAX_HIGHLIGHTER_COMMON_PROPS = {
+  codeTagProps: {
+    className: 'font-mono text-sm',
+  },
+  lineNumberStyle: {
+    color: 'hsl(var(--muted-foreground))',
+    paddingRight: '1rem',
+    minWidth: '2.5rem',
+  },
+  fontSize: '0.875rem',
+  padding: '3rem 1rem 1rem 1rem', // Extra top padding for floating header
+};
+
+// Common programming languages for the select dropdown with file extensions
+const SUPPORTED_LANGUAGES: SupportedLanguage[] = [
+  { value: 'javascript', label: 'JavaScript', extension: 'js' },
+  { value: 'typescript', label: 'TypeScript', extension: 'ts' },
+  { value: 'python', label: 'Python', extension: 'py' },
+  { value: 'java', label: 'Java', extension: 'java' },
+  { value: 'cpp', label: 'C++', extension: 'cpp' },
+  { value: 'c', label: 'C', extension: 'c' },
+  { value: 'csharp', label: 'C#', extension: 'cs' },
+  { value: 'php', label: 'PHP', extension: 'php' },
+  { value: 'ruby', label: 'Ruby', extension: 'rb' },
+  { value: 'go', label: 'Go', extension: 'go' },
+  { value: 'rust', label: 'Rust', extension: 'rs' },
+  { value: 'html', label: 'HTML', extension: 'html' },
+  { value: 'css', label: 'CSS', extension: 'css' },
+  { value: 'scss', label: 'SCSS', extension: 'scss' },
+  { value: 'json', label: 'JSON', extension: 'json' },
+  { value: 'xml', label: 'XML', extension: 'xml' },
+  { value: 'yaml', label: 'YAML', extension: 'yml' },
+  { value: 'markdown', label: 'Markdown', extension: 'md' },
+  { value: 'bash', label: 'Bash', extension: 'sh' },
+  { value: 'sql', label: 'SQL', extension: 'sql' },
+  { value: 'dockerfile', label: 'Dockerfile', extension: 'dockerfile' },
+  { value: 'nginx', label: 'Nginx', extension: 'conf' },
+  { value: 'apache', label: 'Apache', extension: 'conf' },
+  { value: 'plaintext', label: 'Plain Text', extension: 'txt' },
 ];
+
+// Utility function to get file extension for a language
+const getFileExtension = (lang: string): string => {
+  const language = SUPPORTED_LANGUAGES.find(l => l.value === lang);
+  return language?.extension || 'txt';
+};
 
 export const CodeBlock = ({
   code,
@@ -86,18 +125,24 @@ export const CodeBlock = ({
   const [language, setLanguage] = useState(initialLanguage);
   const [isWrapped, setIsWrapped] = useState(false);
 
-  const contextValue = {
-    code,
-    language,
-    isWrapped,
-    setLanguage,
-    setIsWrapped,
-  };
+  const contextValue = useMemo<CodeBlockContextType>(
+    () => ({
+      code,
+      language,
+      isWrapped,
+      setLanguage,
+      setIsWrapped,
+    }),
+    [code, language, isWrapped],
+  );
 
-  const displayLanguage =
-    SUPPORTED_LANGUAGES.find(
-      lang => lang.value === language,
-    )?.label.toLowerCase() || language;
+  const displayLanguage = useMemo(
+    () =>
+      SUPPORTED_LANGUAGES.find(
+        lang => lang.value === language,
+      )?.label.toLowerCase() || language,
+    [language],
+  );
 
   return (
     <CodeBlockContext.Provider value={contextValue}>
@@ -109,10 +154,12 @@ export const CodeBlock = ({
         {...props}
       >
         {/* Floating header elements */}
-        <div className="absolute top-0 left-0 z-10">
+        <div className={FLOATING_HEADER_STYLES}>
           {allowLanguageChange ? (
             <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger className="h-6 w-auto min-w-[80px] border-0 bg-muted/80 backdrop-blur-sm text-xs font-medium text-muted-foreground px-2 py-1 rounded">
+              <SelectTrigger
+                className={`h-6 w-auto min-w-[80px] border-0 ${BACKDROP_STYLES} text-xs font-medium text-muted-foreground px-2 py-1 rounded`}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -124,41 +171,30 @@ export const CodeBlock = ({
               </SelectContent>
             </Select>
           ) : (
-            <div className="inline-flex items-center h-6 px-2 py-1 bg-muted/80 backdrop-blur-sm text-sm font-medium text-muted-foreground rounded-tr-0 rounded-bl-0">
+            <div
+              className={`inline-flex items-center h-6 px-2 py-1 ${BACKDROP_STYLES} text-sm font-medium text-muted-foreground rounded-tr-0 rounded-bl-0`}
+            >
               {displayLanguage}
             </div>
           )}
         </div>
 
-        {children && (
-          <div className="absolute top-2 right-2 z-10 flex items-center gap-1">
-            {children}
-          </div>
-        )}
+        {children && <div className={FLOATING_ACTIONS_STYLES}>{children}</div>}
 
         <div className="relative">
           <ScrollArea className="w-full">
             <div className={cn(!isWrapped && 'w-max min-w-full')}>
-              {/* Light theme syntax highlighter */}
+              {/* Syntax Highlighter Components */}
               <SyntaxHighlighter
+                {...SYNTAX_HIGHLIGHTER_COMMON_PROPS}
                 className="overflow-hidden dark:hidden"
-                codeTagProps={{
-                  className: 'font-mono text-sm',
-                }}
                 customStyle={{
                   margin: 0,
-                  padding: '3rem 1rem 1rem 1rem', // Extra top padding for floating header
-                  fontSize: '0.875rem',
                   background: 'hsl(var(--background))',
                   color: 'hsl(var(--foreground))',
                   whiteSpace: isWrapped ? 'pre-wrap' : 'pre',
                 }}
                 language={language}
-                lineNumberStyle={{
-                  color: 'hsl(var(--muted-foreground))',
-                  paddingRight: '1rem',
-                  minWidth: '2.5rem',
-                }}
                 showLineNumbers={showLineNumbers}
                 style={oneLight}
                 wrapLines={isWrapped}
@@ -167,30 +203,20 @@ export const CodeBlock = ({
                 {code}
               </SyntaxHighlighter>
 
-              {/* Dark theme syntax highlighter */}
               <SyntaxHighlighter
+                {...SYNTAX_HIGHLIGHTER_COMMON_PROPS}
                 className="hidden overflow-hidden dark:block"
-                codeTagProps={{
-                  className: 'font-mono text-sm',
-                }}
                 customStyle={{
                   margin: 0,
-                  padding: '3rem 1rem 1rem 1rem', // Extra top padding for floating header
-                  fontSize: '0.875rem',
                   background: 'hsl(var(--background))',
                   color: 'hsl(var(--foreground))',
                   whiteSpace: isWrapped ? 'pre-wrap' : 'pre',
                 }}
                 language={language}
-                lineNumberStyle={{
-                  color: 'hsl(var(--muted-foreground))',
-                  paddingRight: '1rem',
-                  minWidth: '2.5rem',
-                }}
                 showLineNumbers={showLineNumbers}
                 style={nord}
                 wrapLines={isWrapped}
-                wrapLonges={isWrapped}
+                wrapLongLines={isWrapped}
               >
                 {code}
               </SyntaxHighlighter>
@@ -220,9 +246,10 @@ export const CodeBlockCopyButton = ({
   const [isCopied, setIsCopied] = useState(false);
   const { code } = useContext(CodeBlockContext);
 
-  const copyToClipboard = async () => {
+  const copyToClipboard = useCallback(async () => {
     if (typeof window === 'undefined' || !navigator.clipboard.writeText) {
-      onError?.(new Error('Clipboard API not available'));
+      const error = new Error('Clipboard API not available');
+      onError?.(error);
       return;
     }
 
@@ -232,21 +259,22 @@ export const CodeBlockCopyButton = ({
       onCopy?.();
       setTimeout(() => setIsCopied(false), timeout);
     } catch (error) {
+      console.warn('Failed to copy code to clipboard:', error);
       onError?.(error as Error);
     }
-  };
+  }, [code, onCopy, onError, timeout]);
 
   const Icon = isCopied ? CheckIcon : CopyIcon;
 
   return (
     <Button
-      className={cn(
-        'h-7 w-7 bg-muted/80 backdrop-blur-sm hover:bg-muted border-0 text-muted-foreground hover:text-foreground',
-        className,
-      )}
+      className={cn(`h-7 w-7 ${BUTTON_STYLES}`, className)}
       onClick={copyToClipboard}
       size="icon"
       variant="ghost"
+      aria-label={
+        isCopied ? 'Code copied to clipboard' : 'Copy code to clipboard'
+      }
       {...props}
     >
       {children ?? <Icon size={14} />}
@@ -270,37 +298,7 @@ export const CodeBlockDownloadButton = ({
 }: CodeBlockDownloadButtonProps) => {
   const { code, language } = useContext(CodeBlockContext);
 
-  const getFileExtension = (lang: string): string => {
-    const extensions: Record<string, string> = {
-      javascript: 'js',
-      typescript: 'ts',
-      python: 'py',
-      java: 'java',
-      cpp: 'cpp',
-      c: 'c',
-      csharp: 'cs',
-      php: 'php',
-      ruby: 'rb',
-      go: 'go',
-      rust: 'rs',
-      html: 'html',
-      css: 'css',
-      scss: 'scss',
-      json: 'json',
-      xml: 'xml',
-      yaml: 'yml',
-      markdown: 'md',
-      bash: 'sh',
-      sql: 'sql',
-      dockerfile: 'dockerfile',
-      nginx: 'conf',
-      apache: 'conf',
-      plaintext: 'txt',
-    };
-    return extensions[lang] || 'txt';
-  };
-
-  const downloadCode = () => {
+  const downloadCode = useCallback(() => {
     try {
       const blob = new Blob([code], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
@@ -316,19 +314,18 @@ export const CodeBlockDownloadButton = ({
 
       onDownload?.();
     } catch (error) {
+      console.warn('Failed to download code:', error);
       onError?.(error as Error);
     }
-  };
+  }, [code, filename, language, onDownload, onError]);
 
   return (
     <Button
-      className={cn(
-        'h-7 w-7 bg-muted/80 backdrop-blur-sm hover:bg-muted border-0 text-muted-foreground hover:text-foreground',
-        className,
-      )}
+      className={cn(`h-7 w-7 ${BUTTON_STYLES}`, className)}
       onClick={downloadCode}
       size="icon"
       variant="ghost"
+      aria-label="Download code as file"
       {...props}
     >
       {children ?? <DownloadIcon size={14} />}
@@ -358,13 +355,11 @@ export const CodeBlockWrapButton = ({
 
   return (
     <Button
-      className={cn(
-        'h-7 w-7 bg-muted/80 backdrop-blur-sm hover:bg-muted border-0 text-muted-foreground hover:text-foreground',
-        className,
-      )}
+      className={cn(`h-7 w-7 ${BUTTON_STYLES}`, className)}
       onClick={toggleWrap}
       size="icon"
       variant="ghost"
+      aria-label={isWrapped ? 'Unwrap code lines' : 'Wrap code lines'}
       {...props}
     >
       {children ?? <Icon size={14} />}
