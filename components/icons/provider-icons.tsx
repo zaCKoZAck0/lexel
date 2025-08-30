@@ -82,31 +82,107 @@ export const QwenIcon = React.forwardRef<SVGSVGElement, ProviderIconProps>(
   },
 );
 
-interface ProviderIconsProps {
+export const XaiIcon = React.forwardRef<SVGSVGElement, ProviderIconProps>(
+  function XaiIcon({ ...props }, ref) {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 1000 1000"
+        width="16"
+        height="16"
+        fill="currentColor"
+      >
+        <g>
+          <polygon
+            fill="currentColor"
+            points="226.83 411.15 501.31 803.15 623.31 803.15 348.82 411.15 226.83 411.15"
+          ></polygon>
+          <polygon
+            fill="currentColor"
+            points="348.72 628.87 226.69 803.15 348.77 803.15 409.76 716.05 348.72 628.87"
+          ></polygon>
+          <polygon
+            fill="currentColor"
+            points="651.23 196.85 440.28 498.12 501.32 585.29 773.31 196.85 651.23 196.85"
+          ></polygon>
+          <polygon
+            fill="currentColor"
+            points="673.31 383.25 673.31 803.15 773.31 803.15 773.31 240.44 673.31 383.25"
+          ></polygon>
+        </g>
+      </svg>
+    );
+  },
+);
+
+export const VercelIcon = React.forwardRef<SVGSVGElement, ProviderIconProps>(
+  function VercelIcon({ ...props }, ref) {
+    return (
+      <svg
+        ref={ref}
+        viewBox="0 0 16 16"
+        fill="currentColor"
+        role="img"
+        {...props}
+      >
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M8 1L16 15H0L8 1Z"
+          fill="currentColor"
+        />
+      </svg>
+    );
+  },
+);
+
+export const MetaIcon = React.forwardRef<SVGSVGElement, ProviderIconProps>(
+  function MetaIcon({ ...props }, ref) {
+    return (
+      <svg
+        ref={ref}
+        viewBox="0 0 256 171"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="currentColor"
+        {...props}
+      >
+        <path d="M27.651 112.136c0 9.775 2.146 17.28 4.95 21.82 3.677 5.947 9.16 8.466 14.751 8.466 7.211 0 13.808-1.79 26.52-19.372 10.185-14.092 22.186-33.874 30.26-46.275l13.675-21.01c9.499-14.591 20.493-30.811 33.1-41.806C161.196 4.985 172.298 0 183.47 0c18.758 0 36.625 10.87 50.3 31.257C248.735 53.584 256 81.707 256 110.729c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363v-27.616c15.695 0 19.612-14.422 19.612-30.927 0-23.52-5.484-49.623-17.564-68.273-8.574-13.23-19.684-21.313-31.907-21.313-13.22 0-23.859 9.97-35.815 27.75-6.356 9.445-12.882 20.956-20.208 33.944l-8.066 14.289c-16.203 28.728-20.307 35.271-28.408 46.07-14.2 18.91-26.324 26.076-42.287 26.076-18.935 0-30.91-8.2-38.325-20.556C2.973 139.413 0 126.202 0 111.148l27.651.988Z"></path>
+        <path d="M21.802 33.206C34.48 13.666 52.774 0 73.757 0 85.91 0 97.99 3.597 110.605 13.897c13.798 11.261 28.505 29.805 46.853 60.368l6.58 10.967c15.881 26.459 24.917 40.07 30.205 46.49 6.802 8.243 11.565 10.7 17.752 10.7 15.695 0 19.612-14.422 19.612-30.927l24.393-.766c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363-11.395 0-21.49-2.475-32.654-13.007-8.582-8.083-18.615-22.443-26.334-35.352l-22.96-38.352C118.528 64.08 107.96 49.73 101.845 43.23c-6.578-6.988-15.036-15.428-28.532-15.428-10.923 0-20.2 7.666-27.963 19.39L21.802 33.206Z"></path>
+        <path d="M73.312 27.802c-10.923 0-20.2 7.666-27.963 19.39-10.976 16.568-17.698 41.245-17.698 64.944 0 9.775 2.146 17.28 4.95 21.82L9.027 149.482C2.973 139.413 0 126.202 0 111.148 0 83.772 7.514 55.24 21.802 33.206 34.48 13.666 52.774 0 73.757 0l-.445 27.802Z"></path>
+      </svg>
+    );
+  },
+);
+
+interface ProviderIconsProps extends React.SVGProps<SVGSVGElement> {
   provider: string;
-  className?: string;
 }
 
-export function ProviderIcons({ provider, className }: ProviderIconsProps) {
-  const iconProps = { className };
-
+export function ProviderIcons({ provider, ...props }: ProviderIconsProps) {
   switch (provider.toLowerCase()) {
     case 'openai':
-      return <OpenAIIcon {...iconProps} />;
+      return <OpenAIIcon {...props} />;
     case 'anthropic':
-      return <AnthropicIcon {...iconProps} />;
+      return <AnthropicIcon {...props} />;
     case 'google':
     case 'gemini':
-      return <GeminiIcon {...iconProps} />;
+      return <GeminiIcon {...props} />;
     case 'deepseek':
-      return <DeepSeekIcon {...iconProps} />;
+      return <DeepSeekIcon {...props} />;
     case 'qwen':
-      return <QwenIcon {...iconProps} />;
+      return <QwenIcon {...props} />;
+    case 'xai':
+      return <XaiIcon {...props} />;
+    case 'gateway':
+    case 'vercel':
+      return <VercelIcon {...props} />;
+    case 'meta':
+      return <MetaIcon {...props} />;
     default:
       // Fallback icon for unknown providers
       return (
         <div
-          className={`${className} bg-muted rounded flex items-center justify-center text-xs font-medium`}
+          className={`${props.className} bg-muted rounded flex items-center justify-center text-xs font-medium`}
         >
           {provider.charAt(0).toUpperCase()}
         </div>

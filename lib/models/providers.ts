@@ -1,7 +1,6 @@
 // Central AI provider configuration.
 // This module is the single source of truth for provider metadata (ids, names, models, docs, key formats, icons, etc.).
 // Client components that need lightweight data can tree-shake unused fields.
-
 import type { ComponentType, SVGProps } from 'react';
 import {
   OpenAIIcon,
@@ -9,11 +8,26 @@ import {
   GeminiIcon,
   DeepSeekIcon,
   QwenIcon,
+  XaiIcon,
+  VercelIcon,
+  MetaIcon,
 } from '@/components/icons/provider-icons';
+
+export type ProviderId =
+  | 'openai'
+  | 'google'
+  | 'anthropic'
+  | 'deepseek'
+  | 'gateway'
+  | 'meta';
+// | 'qwen'
+// | 'xai';
+
+export type NonKeyProviderId = 'meta';
 
 // Add new providers here and their inferred union type will update automatically.
 export interface ProviderConfig {
-  id: 'openai' | 'google' | 'anthropic' | 'deepseek' | 'qwen';
+  id: ProviderId;
   name: string;
   /** React SVG icon component (forwardRef). */
   Icon: ComponentType<SVGProps<SVGSVGElement>>;
@@ -25,11 +39,14 @@ export interface ProviderConfig {
   keyPortal?: string;
   /** Optional regex to validate API key shape (lightweight client side). */
   keyPattern?: RegExp;
+  /** Whether the provider is enabled to add a key. */
+  enabled?: boolean;
 }
 
 export const AI_PROVIDERS: ProviderConfig[] = [
   {
     id: 'openai',
+    enabled: true,
     name: 'OpenAI',
     Icon: OpenAIIcon,
     keyFormat: 'sk-...',
@@ -42,16 +59,18 @@ export const AI_PROVIDERS: ProviderConfig[] = [
   },
   {
     id: 'anthropic',
+    enabled: true,
     name: 'Anthropic',
     Icon: AnthropicIcon,
     keyFormat: 'sk-ant-...',
     documentation: 'https://docs.anthropic.com',
     keyPortal: 'https://console.anthropic.com/settings/keys',
-    // Anthropic keys observed: sk-ant- + base62 tail (length >= 8)
-    keyPattern: /^sk-ant-[A-Za-z0-9]{8,}$/,
+    // Anthropic keys observed: sk-ant- + base62 tail (length >= 8), can contain hyphens and underscores
+    keyPattern: /^sk-ant-[A-Za-z0-9_-]{8,}$/,
   },
   {
     id: 'google',
+    enabled: true,
     name: 'Google',
     Icon: GeminiIcon,
     keyFormat: 'AIza...',
@@ -62,6 +81,7 @@ export const AI_PROVIDERS: ProviderConfig[] = [
   },
   {
     id: 'deepseek',
+    enabled: true,
     name: 'DeepSeek',
     Icon: DeepSeekIcon,
     keyFormat: 'sk-...',
@@ -69,16 +89,43 @@ export const AI_PROVIDERS: ProviderConfig[] = [
     keyPortal: 'https://platform.deepseek.com/api_keys',
   },
   {
-    id: 'qwen',
-    name: 'Qwen',
-    Icon: QwenIcon,
-    keyFormat: 'sk-...',
-    documentation: 'https://help.aliyun.com/en/qwen',
-    keyPortal: 'https://bailian.console.aliyun.com/?apiKey=1#/api-key',
+    id: 'gateway',
+    enabled: true,
+    name: 'AI Gateway',
+    Icon: VercelIcon,
+    keyFormat: 'vck...',
+    documentation: 'https://vercel.com/docs/ai',
+    keyPortal: 'https://vercel.com/account/tokens',
+    keyPattern: /^vck_[A-Za-z0-9_\-]{40,}$/,
+  },
+  // {
+  //   id: 'qwen',
+  //   name: 'Qwen',
+  //   Icon: QwenIcon,
+  //   keyFormat: 'sk-...',
+  //   documentation: 'https://help.aliyun.com/en/qwen',
+  //   keyPortal: 'https://bailian.console.aliyun.com/?apiKey=1#/api-key',
+  // },
+  // {
+  //   id: 'xai',
+  //   name: 'XAI',
+  //   Icon: XaiIcon,
+  //   keyFormat: 'sk-...',
+  //   documentation: 'https://xai.com/docs',
+  //   keyPortal: 'https://console.x.ai/',
+  //   keyPattern: /^xai-sk-[A-Za-z0-9_-]{10,}$/,
+  // },
+
+  // -------- Non-key providers --------
+  {
+    id: 'meta',
+    name: 'Meta',
+    Icon: MetaIcon,
+    keyFormat: '',
+    enabled: false,
+    documentation: '',
   },
 ];
-
-export type ProviderId = (typeof AI_PROVIDERS)[number]['id'];
 
 // Fast lookup map (frozen for safety)
 export const PROVIDER_MAP: Record<ProviderId, ProviderConfig> = Object.freeze(

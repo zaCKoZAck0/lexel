@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,11 +43,13 @@ import { ApiRequestError } from '@/lib/api/client';
 interface EditApiKeyDialogProps {
   apiKey: ApiKey;
   disabled?: boolean;
+  trigger?: ReactNode;
 }
 
 export function EditApiKeyDialog({
   apiKey,
   disabled = false,
+  trigger,
 }: EditApiKeyDialogProps) {
   const [open, setOpen] = useState(false);
   const [provider, setProvider] = useState(apiKey.provider);
@@ -123,37 +125,41 @@ export function EditApiKeyDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={disabled}
-              aria-label="Edit API key"
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-          </DialogTrigger>
-        </TooltipTrigger>
-        <TooltipContent>Edit key</TooltipContent>
-      </Tooltip>
-      <DialogContent className="sm:max-w-md space-y-5">
+      {trigger ? (
+        <DialogTrigger asChild>{trigger}</DialogTrigger>
+      ) : (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={disabled}
+                aria-label="Edit API key"
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Edit key</TooltipContent>
+        </Tooltip>
+      )}
+      <DialogContent className="sm:max-w-sm space-y-4">
         <DialogHeader>
           <DialogTitle>Edit API Key</DialogTitle>
-          <DialogDescription className="text-sm leading-relaxed">
-            Update the key value or move it to another provider.
+          <DialogDescription className="text-xs leading-relaxed">
+            Update the key or move it to another provider.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-5">
-          <div className="grid gap-2">
+        <div className="grid gap-4">
+          <div className="grid gap-1.5">
             <Label htmlFor="provider">Provider</Label>
             <Select value={provider} onValueChange={setProvider}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {AI_PROVIDERS.map(p => (
+                {AI_PROVIDERS.filter(p => p.enabled !== false).map(p => (
                   <SelectItem key={p.id} value={p.id}>
                     <div className="flex items-center gap-2">
                       <p.Icon className="h-4 w-4" />
@@ -164,7 +170,7 @@ export function EditApiKeyDialog({
               </SelectContent>
             </Select>
             {selectedProviderInfo && (
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 text-[11px] text-muted-foreground">
                 <span>Format: {selectedProviderInfo.keyFormat}</span>
                 {selectedProviderInfo.keyPortal && (
                   <a
@@ -181,7 +187,7 @@ export function EditApiKeyDialog({
               </div>
             )}
           </div>
-          <div className="grid gap-2">
+          <div className="grid gap-1.5">
             <Label htmlFor="api-key-edit">API Key</Label>
             <div className="flex items-center gap-2">
               <Input
@@ -196,7 +202,7 @@ export function EditApiKeyDialog({
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
+                    size="icon"
                     onClick={() => setShowKey(s => !s)}
                     aria-label={showKey ? 'Hide key' : 'Show key'}
                   >
@@ -225,6 +231,7 @@ export function EditApiKeyDialog({
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={updateMutation.isPending}
+            size="sm"
           >
             Cancel
           </Button>
@@ -236,6 +243,7 @@ export function EditApiKeyDialog({
               !keyValue.trim() ||
               !isPatternValid
             }
+            size="sm"
           >
             {updateMutation.isPending && (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

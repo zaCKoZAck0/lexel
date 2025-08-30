@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { getProviderInfo } from '@/lib/models/providers';
-import { allModels } from '@/lib/models/models';
+import { allModels } from '@/lib/models';
 import { KeyIcon, Settings } from 'lucide-react';
 import Link from 'next/link';
 

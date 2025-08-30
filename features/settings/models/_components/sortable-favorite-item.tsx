@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import type { Model } from '@/lib/models/models';
+import type { Model } from '@/lib/models';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Minus } from 'lucide-react';

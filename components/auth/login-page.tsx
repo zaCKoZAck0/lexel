@@ -33,7 +33,7 @@ export function LoginPage({ className, redirectTo = '/' }: LoginPageProps) {
 
       <div className="absolute inset-0 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <Card className="bg-card/50 backdrop-blur-md">
+          <Card className="bg-card/75 backdrop-blur-md">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl font-bold">Welcome</CardTitle>
               <CardDescription className="text-lg">

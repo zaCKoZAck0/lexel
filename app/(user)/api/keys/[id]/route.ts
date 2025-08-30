@@ -57,7 +57,16 @@ export async function PATCH(
       const existing = await apiKeysService.findById(id, session2.user.id);
       if (!existing) return fail('API key not found', 404);
       const info = getProviderInfo(existing.provider);
-      if (info?.keyPattern && !info.keyPattern.test(parsed.key.trim())) {
+      if (!info) {
+        return fail('Unknown provider', 400);
+      }
+      if (info.enabled === false) {
+        return fail(
+          `Adding API keys for ${info.name} is currently disabled`,
+          400,
+        );
+      }
+      if (info.keyPattern && !info.keyPattern.test(parsed.key.trim())) {
         return fail('Key format invalid for provider', 400);
       }
     }

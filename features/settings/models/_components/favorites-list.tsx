@@ -7,7 +7,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import type { Model } from '@/lib/models/models';
+import type { Model } from '@/lib/models';
 import {
   DndContext,
   closestCenter,

@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
-import { SettingsHeader } from '@/features/settings/settings-header';
-import { SettingsSidebar } from '@/features/settings/settings-sidebar';
+import { SettingsHeader } from '@/features/settings';
+import { SettingsSidebar } from '@/features/settings';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -20,7 +20,7 @@ export default async function AccountLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-4 md:py-6 space-y-4 md:space-y-6">
+      <div className="max-w-screen-lg mx-auto py-4 md:py-6 space-y-4 md:space-y-6">
         {/* Top bar */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">

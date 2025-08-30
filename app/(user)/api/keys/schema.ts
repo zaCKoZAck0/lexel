@@ -18,6 +18,14 @@ export const keySchema = z
       });
       return;
     }
+    if (info.enabled === false) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['provider'],
+        message: `Adding API keys for ${info.name} is currently disabled`,
+      });
+      return;
+    }
     if (info.keyPattern && !info.keyPattern.test(data.key.trim())) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -40,14 +48,26 @@ export const updateKeySchema = z
     default: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
-    // Only validate pattern if both provider and key OR if key provided (then need existing provider - validated later in handler)
+    // Only validate if both provider and key are provided
     if (data.provider && data.key) {
       const info = getProviderInfo(data.provider);
-      if (
-        info?.keyPattern &&
-        data.key &&
-        !info.keyPattern.test(data.key.trim())
-      ) {
+      if (!info) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['provider'],
+          message: 'Unknown provider',
+        });
+        return;
+      }
+      if (info.enabled === false) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['provider'],
+          message: `Adding API keys for ${info.name} is currently disabled`,
+        });
+        return;
+      }
+      if (info.keyPattern && !info.keyPattern.test(data.key.trim())) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['key'],

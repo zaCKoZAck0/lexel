@@ -23,8 +23,8 @@ export const getRandomSubmittedMessage = () => {
 };
 
 export function getGreetingText(name: string | undefined | null) {
-  const showName = name && name.split(' ')[0].length < 8;
-  const nameToShow = showName ? name.split(' ')[0] : 'Human';
+  const showName = name && name?.split(' ')[0]?.length < 8;
+  const nameToShow = showName ? name?.split(' ')[0] : 'Human';
   const isMorning = new Date().getHours() < 12 && new Date().getHours() > 6;
   const isLateNight = new Date().getHours() > 20 || new Date().getHours() < 6;
 

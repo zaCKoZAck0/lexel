@@ -1,27 +1,44 @@
-import { getModelDetails } from '@/lib/models/models';
+import { getModelDetails } from '@/lib/models';
 import { fail } from '@/lib/api/server/api-response';
-import {
-  getChatById,
-  createChat,
-  getMessagesByChatId,
-  deleteMessages,
-  saveMessages,
-} from '@/lib/api/server/services/chat';
 import { AIMessage } from '@/lib/types/ai-message';
-import { convertToModelMessages, generateId, streamText } from 'ai';
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  generateId,
+  JsonToSseTransformStream,
+  smoothStream,
+  stepCountIs,
+  streamText,
+} from 'ai';
 import { headers } from 'next/headers';
-import { PostRequestBody, postRequestBodySchema } from './schema';
-import { convertToUIMessages } from '@/lib/utils/utils';
-import { JsonValue } from '@prisma/client/runtime/library';
 import { auth } from '@/lib/auth/auth';
 import { limiter } from '@/lib/api/server/rate-limit';
 import { isAppError } from '@/lib/api/server/errors';
 import { getDefaultApiKeyForProvider } from '@/lib/api/server/services/api-keys';
 import { getRegistryModel } from '@/lib/models/model-registry';
 import { getSystemPrompt } from '@/lib/utils/prompts';
+import { getProviderOptions } from '@/lib/models/provider-options';
+import { createChat, getChatById, getMessagesByChatId, saveMessages } from '@/lib/api/server/services/chat';
+import { JsonValue } from '@prisma/client/runtime/library';
+import { convertToUIMessages } from '@/lib/utils/utils';
+import { webSearch } from '@/lib/tools/exa-web-search';
 
 // Allow streaming responses up to 30 seconds
-export const maxDuration = 30;
+export const maxDuration = 60;
+
+interface RequestBody {
+  id: string;
+  userInfo: {
+    timezone: string;
+  };
+  message: AIMessage;
+  modelInfo: {
+    modelId: string;
+    webSearchEnabled?: boolean;
+    reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high';
+    thinkingEnabled?: boolean;
+  };
+}
 
 export async function POST(req: Request) {
   try {
@@ -33,6 +50,7 @@ export async function POST(req: Request) {
       return fail('Rate limit exceeded. Please try again later.', 429);
     }
 
+    
     // Authentication - only logged-in users can access chat
     const session = await auth();
     if (!session?.user?.id) {
@@ -40,57 +58,33 @@ export async function POST(req: Request) {
     }
 
     // Validate request body
-    let requestBody: PostRequestBody;
-    try {
-      const json = await req.json();
-      requestBody = postRequestBodySchema.parse(json);
-    } catch (error) {
-      if (error instanceof Error && error.name === 'ZodError') {
-        return fail('Invalid request format', 400, error);
-      }
-      return fail('Invalid JSON in request body', 400);
-    }
+    const json = await req.json();
 
-    const { id, message, trigger, messageId, modelId } = requestBody;
+    console.log(json);
 
-    // Validate required fields
-    if (!id || !modelId) {
-      return fail('Missing required fields: id and modelId are required', 400);
-    }
-
-    if (trigger === 'submit-message' && !message) {
-      return fail('Message is required for submit-message trigger', 400);
-    }
-
-    if (trigger === 'regenerate-message' && !messageId) {
-      return fail('Message ID is required for regenerate-message trigger', 400);
-    }
-
-    const chat = await getChatById(id);
-
-    if (!chat) {
-      // Todo: generate a title for the chat
-      await createChat({
-        chatId: id,
-        userId: session.user.id,
-        title: 'New Chat',
-      });
-    } else {
-      if (chat.userId !== session.user.id) {
-        return fail('Unauthorized - You are not the owner of this chat', 401);
-      }
-    }
+    const { id, userInfo, message, modelInfo } = json as RequestBody;
 
     // Validate model
-    const model = getModelDetails(modelId);
+    const model = getModelDetails(modelInfo.modelId);
     if (!model) {
-      return fail(`Unsupported model: ${modelId}`, 400);
+      return fail(`Unsupported model: ${modelInfo.modelId}`, 400);
     }
 
     // get provider api key
     const provider = model.provider;
 
-    // Validate provider API key
+    let chat = await getChatById(id);
+    if (!chat) {
+      // create chat
+      // TODO: get title from query
+      const newChat = await createChat({
+        userId: session.user.id,
+        chatId: id,
+        title: 'New Chat',
+      });
+      chat = newChat;
+    }
+
     const providerApiKey = await getDefaultApiKeyForProvider({
       userId: session.user.id,
       provider,
@@ -99,95 +93,105 @@ export async function POST(req: Request) {
       return fail('Missing provider API key', 401);
     }
 
-    // Get chat messages with error handling
-    let dbMessages;
-    try {
-      dbMessages = await getMessagesByChatId(id);
-    } catch (error) {
-      console.error('[CHAT_API_ERROR] Failed to fetch messages:', error);
-      return fail('Failed to retrieve chat history', 500);
-    }
+    await saveMessages({
+      messages: [{
+        chatId: id,
+        role: 'user',
+        parts: message.parts as JsonValue,
+        metadata: message.metadata as JsonValue,
+        id: message.id,
+        modelId: 'N/A',
+        attachmentUrls: [],
+        createdAt: new Date(),
+      }],
+    })
 
-    let uiMessages = [...convertToUIMessages(dbMessages)];
+    const dbMessages = await getMessagesByChatId(id);
+    const uiMessages = [...convertToUIMessages(dbMessages), message];
 
-    // Handle different triggers
-    if (trigger === 'submit-message') {
-      uiMessages = [...uiMessages, message];
-    } else if (trigger === 'regenerate-message') {
-      const messageIndex = uiMessages.findIndex(m => m.id === messageId);
-      if (messageIndex === -1) {
-        return fail('Message not found for regeneration', 404);
-      }
+    let reasoningStartTimeMs: number | undefined;
+    let reasoningEndTimeMs: number | undefined;
+    const requestStartTimeMs = performance.now();
 
-      uiMessages = uiMessages.slice(0, messageIndex);
-
-      // Delete messages after the messageId
-      try {
-        await deleteMessages(uiMessages.slice(messageIndex + 1).map(m => m.id));
-      } catch (error) {
-        console.error('[CHAT_API_ERROR] Failed to delete messages:', error);
-        // Continue with the request even if deletion fails
-      }
-    }
-
-    // Save user message
-    try {
-      await saveMessages({
-        messages: [
-          {
-            id: message.id,
-            chatId: id,
-            modelId: 'N/A',
-            role: 'user',
-            parts: message.parts,
-            metadata: {},
-            attachmentUrls: [],
-            createdAt: new Date(),
+    const stream = createUIMessageStream({
+      execute: ({ writer: dataStream }) => {
+        const result = streamText({
+          model: getRegistryModel({
+            modelId: modelInfo.modelId,
+            providerApiKey: providerApiKey.key,
+          }),
+          tools: {
+            ...(modelInfo.webSearchEnabled ? {
+              webSearch,
+            } : {}),
           },
-        ],
-      });
-    } catch (error) {
-      console.error('[CHAT_API_ERROR] Failed to save user message:', error);
-      return fail('Failed to save message', 500);
-    }
+          stopWhen: stepCountIs(5),
+          experimental_transform: smoothStream({ chunking: 'word' }),
+          providerOptions: getProviderOptions({
+            isReasoning: model.isReasoning,
+            effort: modelInfo.reasoningEffort,
+            thinkingEnabled: modelInfo.thinkingEnabled,
+          }),
+          onChunk: ({ chunk }) => {
+            if (chunk.type === 'reasoning-delta') {
+              if (!reasoningStartTimeMs) {
+                reasoningStartTimeMs = performance.now();
+              } else {
+                reasoningEndTimeMs = performance.now();
+              }
+            }
+          },
+          system: getSystemPrompt({
+            modelName: model.name,
+            webSearchEnabled: modelInfo.webSearchEnabled,
+            dateTime: new Date().toLocaleString('en-US', {
+              timeZone: userInfo.timezone,
+            }),
+          }),
+          messages: convertToModelMessages(uiMessages),
+        });
+        result.consumeStream();
 
-    // Create AI stream with enhanced error handling
-    const result = streamText({
-      model: getRegistryModel({
-        modelId,
-        providerApiKey: providerApiKey.key,
-      }),
-      system: getSystemPrompt({
-        modelName: model.name,
-        dateTime: new Date().toLocaleString(),
-      }),
-      messages: convertToModelMessages(uiMessages),
-    });
-
-    const requestStartTimeMs = Date.now();
-
-    return result.toUIMessageStreamResponse<AIMessage>({
-      sendReasoning: true,
-      sendSources: true,
-      generateMessageId: generateId,
-      onFinish: async ({ messages }) => {
-        try {
-          await saveMessages({
-            messages: messages.map(m => ({
-              id: m.id,
-              chatId: id,
-              metadata: m.metadata as JsonValue,
-              modelId,
-              role: m.role,
-              parts: m.parts as JsonValue,
-              attachmentUrls: [],
-              createdAt: new Date(),
-            })),
-          });
-        } catch (error) {
-          console.error('[CHAT_API_ERROR] Failed to save AI messages:', error);
-          // Don't fail the stream for save errors, just log them
-        }
+        dataStream.merge(
+          result.toUIMessageStream<AIMessage>({
+            sendReasoning: true,
+            sendSources: true,
+            onFinish: async ({messages}) => {
+              await saveMessages({
+                messages: messages.map(message => ({
+                  chatId: id,
+                  role: message.role,
+                  modelId: modelInfo.modelId,
+                  parts: message.parts as JsonValue,
+                  metadata: message.metadata as JsonValue,
+                  attachmentUrls: [],
+                  id: message.id,
+                  createdAt: new Date(),
+                })),
+              })
+            },
+            generateMessageId: generateId,
+            messageMetadata: ({ part }) => {
+              if (part.type === 'start') {
+                return {
+                  modelId: modelInfo.modelId,
+                  requestStartTimeMs,
+                  responseStartTimeMs: performance.now(),
+                };
+              }
+              if (part.type === 'finish') {
+                return {
+                  totalTokens: part.totalUsage.totalTokens,
+                  responseEndTimeMs: performance.now(),
+                  reasoningTime:
+                    !reasoningStartTimeMs || !reasoningEndTimeMs
+                      ? undefined
+                      : reasoningEndTimeMs - reasoningStartTimeMs,
+                };
+              }
+            },
+          }),
+        );
       },
       onError: error => {
         console.error('[CHAT_API_ERROR] AI stream error:', error);
@@ -226,22 +230,9 @@ export async function POST(req: Request) {
 
         return 'An unexpected error occurred during AI processing';
       },
-      messageMetadata: ({ part }) => {
-        if (part.type === 'start') {
-          return {
-            modelId,
-            requestStartTimeMs,
-            responseStartTimeMs: Date.now(),
-          };
-        }
-        if (part.type === 'finish') {
-          return {
-            totalTokens: part.totalUsage.totalTokens,
-            responseEndTimeMs: Date.now(),
-          };
-        }
-      },
     });
+
+    return new Response(stream.pipeThrough(new JsonToSseTransformStream()));
   } catch (err) {
     // Handle application-specific errors
     if (isAppError(err)) {

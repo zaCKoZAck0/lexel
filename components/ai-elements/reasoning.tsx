@@ -6,7 +6,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { cn } from '@/lib/utils/utils';
+import { cn, formatMsToReadableTime } from '@/lib/utils/utils';
 import { BrainIcon, ChevronDownIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { createContext, memo, useContext, useEffect, useState } from 'react';
@@ -102,7 +102,10 @@ export type ReasoningTriggerProps = ComponentProps<typeof CollapsibleTrigger>;
 
 export const ReasoningTrigger = memo(
   ({ className, children, ...props }: ReasoningTriggerProps) => {
-    const { isStreaming, isOpen } = useReasoning();
+    const { isStreaming, isOpen, duration } = useReasoning();
+
+    const reasoningTimeText = formatMsToReadableTime(duration);
+    const displayText = `Thought for ${reasoningTimeText}`;
 
     return (
       <CollapsibleTrigger
@@ -116,9 +119,9 @@ export const ReasoningTrigger = memo(
           <>
             <BrainIcon className="size-4" />
             {isStreaming ? (
-              <ShinyText text="Thinking..." disabled={false} speed={1} />
+              <ShinyText text={'Thinking...'} disabled={false} speed={1} />
             ) : (
-              <p>Reasoning</p>
+              <p>{displayText}</p>
             )}
             <ChevronDownIcon
               className={cn(
@@ -149,7 +152,11 @@ export const ReasoningContent = memo(
       )}
       {...props}
     >
-      <Response className="grid gap-2">{children}</Response>
+      <Response className="grid gap-2">
+        {!children || children.length === 0 || children?.trim() === ''
+          ? 'No visible thinking :('
+          : children}
+      </Response>
     </CollapsibleContent>
   ),
 );

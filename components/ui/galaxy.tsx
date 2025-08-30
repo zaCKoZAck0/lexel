@@ -1,6 +1,7 @@
-'use client';
-import { Renderer, Program, Mesh, Color, Triangle } from 'ogl';
-import { useEffect, useRef } from 'react';
+"use client";
+
+import { Renderer, Program, Mesh, Color, Triangle } from "ogl";
+import { useEffect, useRef } from "react";
 
 const vertexShader = `
 attribute vec2 uv;
@@ -231,23 +232,7 @@ export default function Galaxy({
       gl.clearColor(0, 0, 0, 1);
     }
 
-    const program: Program = new Program(gl, {
-      vertex: vertexShader,
-      fragment: fragmentShader,
-      uniforms: {
-        uTime: { value: 0 },
-        uResolution: {
-          value: new Color(
-            gl.canvas.width,
-            gl.canvas.height,
-            gl.canvas.width / gl.canvas.height,
-          ),
-        },
-        uFocal: { value: new Float32Array(focal) },
-        uMouse: { value: new Float32Array([0, 0]) },
-        uScroll: { value: 0 },
-      },
-    });
+    let program: Program;
 
     function resize() {
       const scale = 1;
@@ -256,14 +241,49 @@ export default function Galaxy({
         program.uniforms.uResolution.value = new Color(
           gl.canvas.width,
           gl.canvas.height,
-          gl.canvas.width / gl.canvas.height,
+          gl.canvas.width / gl.canvas.height
         );
       }
     }
-    window.addEventListener('resize', resize, false);
+    window.addEventListener("resize", resize, false);
     resize();
 
     const geometry = new Triangle(gl);
+    program = new Program(gl, {
+      vertex: vertexShader,
+      fragment: fragmentShader,
+      uniforms: {
+        uTime: { value: 0 },
+        uResolution: {
+          value: new Color(
+            gl.canvas.width,
+            gl.canvas.height,
+            gl.canvas.width / gl.canvas.height
+          ),
+        },
+        uFocal: { value: new Float32Array(focal) },
+        uRotation: { value: new Float32Array(rotation) },
+        uStarSpeed: { value: starSpeed },
+        uDensity: { value: density },
+        uHueShift: { value: hueShift },
+        uSpeed: { value: speed },
+        uMouse: {
+          value: new Float32Array([
+            smoothMousePos.current.x,
+            smoothMousePos.current.y,
+          ]),
+        },
+        uGlowIntensity: { value: glowIntensity },
+        uSaturation: { value: saturation },
+        uMouseRepulsion: { value: mouseRepulsion },
+        uTwinkleIntensity: { value: twinkleIntensity },
+        uRotationSpeed: { value: rotationSpeed },
+        uRepulsionStrength: { value: repulsionStrength },
+        uMouseActiveFactor: { value: 0.0 },
+        uAutoCenterRepulsion: { value: autoCenterRepulsion },
+        uTransparent: { value: transparent },
+      },
+    });
 
     const mesh = new Mesh(gl, { geometry, program });
     let animateId: number;
@@ -306,19 +326,19 @@ export default function Galaxy({
     }
 
     if (mouseInteraction) {
-      ctn.addEventListener('mousemove', handleMouseMove);
-      ctn.addEventListener('mouseleave', handleMouseLeave);
+      ctn.addEventListener("mousemove", handleMouseMove);
+      ctn.addEventListener("mouseleave", handleMouseLeave);
     }
 
     return () => {
       cancelAnimationFrame(animateId);
-      window.removeEventListener('resize', resize);
+      window.removeEventListener("resize", resize);
       if (mouseInteraction) {
-        ctn.removeEventListener('mousemove', handleMouseMove);
-        ctn.removeEventListener('mouseleave', handleMouseLeave);
+        ctn.removeEventListener("mousemove", handleMouseMove);
+        ctn.removeEventListener("mouseleave", handleMouseLeave);
       }
       ctn.removeChild(gl.canvas);
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
   }, [
     focal,
@@ -339,5 +359,5 @@ export default function Galaxy({
     transparent,
   ]);
 
-  return <div ref={ctnDom} className="w-screen h-screen relative" {...rest} />;
+  return <div ref={ctnDom} className="w-full h-full relative" {...rest} />;
 }

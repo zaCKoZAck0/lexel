@@ -23,8 +23,8 @@ model User {
   api_keys  ApiKeys[]
 
   userPreference UserPreferences?
-  chats         Chat[]
-  votes         Vote[]
+  chats          Chat[]
+  votes          Vote[]
 }
 
 model Account {
@@ -105,27 +105,28 @@ model ApiKeys {
 }
 
 model Chat {
-  id         String      @id @default(cuid())
-  createdAt  DateTime    @default(now())
+  id         String     @id @default(cuid())
+  createdAt  DateTime   @default(now())
   title      String
   userId     String
-  visibility Visibility  @default(PRIVATE)
-  
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  Message[]
-  votes     Vote[]
+  visibility Visibility @default(PRIVATE)
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+  votes    Vote[]
+  streams  Stream[]
 }
 
 model Message {
-  id            String   @id @default(cuid())
-  chatId        String
-  modelId       String
-  role          String
-  parts         Json
-  metadata      Json     @default("{}")
+  id             String   @id @default(cuid())
+  chatId         String
+  modelId        String
+  role           String
+  parts          Json
+  metadata       Json     @default("{}")
   attachmentUrls String[] // URLs to blob storage instead of storing files in DB
-  createdAt     DateTime @default(now())
-  
+  createdAt      DateTime @default(now())
+
   chat  Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
   votes Vote[]
 }
@@ -135,12 +136,20 @@ model Vote {
   messageId String
   userId    String
   isUpvoted Boolean
-  
+
   chat    Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade, map: "Vote_chat_fkey")
   message Message @relation(fields: [messageId], references: [id], onDelete: Cascade, map: "Vote_message_fkey")
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Vote_user_fkey")
-  
+
   @@id([chatId, messageId])
+}
+
+model Stream {
+  id        String   @id @default(cuid())
+  chatId    String
+  createdAt DateTime @default(now())
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 }
 
 enum Visibility {
