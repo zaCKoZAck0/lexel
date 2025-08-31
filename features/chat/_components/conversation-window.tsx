@@ -22,23 +22,22 @@ import { ChatRequestOptions } from 'ai';
 import { ShinyText } from '@/components/ui/shiny-text';
 import { getRandomSubmittedMessage } from '@/lib/utils/ui-text';
 import { Button } from '@/components/ui/button';
+import WebSearchResults from './web-search-results';
 
 export function ConversationWindow({
   messages,
   status,
   userAvatar,
   userInitials,
-  regenerate,
   selectedModelId,
+  chatId,
 }: {
   messages: AIMessage[];
   status: string;
   userAvatar: string;
   userInitials: string;
   selectedModelId: string;
-  regenerate: (
-    options?: { messageId?: string } & ChatRequestOptions,
-  ) => Promise<void>;
+  chatId: string;
 }) {
   return (
     <Conversation>
@@ -52,6 +51,14 @@ export function ConversationWindow({
               <MessageContent>
                 {message.parts.map((part, i) => {
                   switch (part.type) {
+                    case 'tool-webSearch':
+                      return (
+                        <WebSearchResults
+                          className="mb-4"
+                          key={`${message.id}-${i}`}
+                          part={part as any}
+                        />
+                      );
                     case 'text':
                       return (
                         <div className="group" key={`${message.id}-${i}`}>
@@ -59,12 +66,9 @@ export function ConversationWindow({
                           <MessageActions
                             message={message}
                             part={part}
-                            regenerate={() =>
-                              regenerate({
-                                messageId: messages[messageIndex - 1]?.id,
-                                body: { modelId: selectedModelId },
-                              })
-                            }
+                            chatId={chatId}
+                            selectedModelId={selectedModelId}
+                            messages={messages}
                           />
                         </div>
                       );
@@ -78,9 +82,12 @@ export function ConversationWindow({
                             status === 'streaming' &&
                             message.id === messages[messages.length - 1].id
                           }
+                          duration={message.metadata?.reasoningTime}
                         >
                           <ReasoningTrigger />
-                          <ReasoningContent>{part.text}</ReasoningContent>
+                          <ReasoningContent className="text-foreground/50">
+                            {part.text}
+                          </ReasoningContent>
                         </Reasoning>
                       );
 

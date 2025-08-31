@@ -1,4 +1,4 @@
-import { getModelDetails } from '@/lib/models/models';
+import { getModelDetails } from '@/lib/models';
 import { Chat } from '@/features/chat';
 import { generateId } from 'ai';
 import { getByUserId } from '@/lib/api/server/services/user-preferences';

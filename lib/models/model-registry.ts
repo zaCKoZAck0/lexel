@@ -1,9 +1,15 @@
-import { getModelDetails } from './models';
-import { getProviderInfo } from './providers';
+import { getModelDetails } from '.';
+import {
+  getProviderInfo,
+  type ProviderId,
+  type NonKeyProviderId,
+} from './providers';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createDeepSeek } from '@ai-sdk/deepseek';
 import { createProviderRegistry } from 'ai';
+import { createGateway } from '@ai-sdk/gateway';
+import { createAnthropic } from '@ai-sdk/anthropic';
 
 interface GetLanguageModelProps {
   modelId: string;
@@ -24,20 +30,25 @@ export function getRegistryModel({
   }
 
   const registry = createProviderRegistry({
-    // register provider with prefix and default setup:
     google: createGoogleGenerativeAI({
       apiKey: providerApiKey,
     }),
-    // register provider with prefix and custom setup:
     openai: createOpenAI({
       apiKey: providerApiKey,
     }),
     deepseek: createDeepSeek({
       apiKey: providerApiKey,
     }),
+    gateway: createGateway({
+      apiKey: providerApiKey,
+    }),
+    anthropic: createAnthropic({
+      apiKey: providerApiKey,
+    }),
   });
 
-  const identifier = `${model.provider}:${model.id}` as const;
+  const identifier =
+    `${model.provider as Exclude<ProviderId, NonKeyProviderId>}:${model.id.split(':')[1]}` as const;
 
   return registry.languageModel(identifier);
 }

@@ -3,6 +3,7 @@ import { twMerge } from 'tailwind-merge';
 import { AIMessage, MessageMetadata } from '@/lib/types/ai-message';
 import { Message } from '@prisma/client';
 import { UIDataTypes, UIMessagePart, UITools } from 'ai';
+import { formatDuration, intervalToDuration } from 'date-fns';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -16,3 +17,21 @@ export function convertToUIMessages(messages: Message[]): AIMessage[] {
     metadata: message.metadata as MessageMetadata,
   }));
 }
+
+export const formatMsToReadableTime = (durationMs?: number) => {
+  if (!durationMs || durationMs <= 0) return 'some time';
+
+  // For very small durations, show milliseconds
+  if (durationMs < 1000) {
+    return `${Math.round(durationMs)}ms`;
+  }
+
+  const duration = intervalToDuration({
+    start: 0,
+    end: durationMs,
+  });
+  return formatDuration(duration, {
+    format: ['hours', 'minutes', 'seconds'],
+    zero: false,
+  });
+};

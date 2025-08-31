@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import type { Model } from '@/lib/models/models';
+import type { Model } from '@/lib/models';
 import { getProviderInfo } from '@/lib/models/providers';
 import { Search, Plus } from 'lucide-react';
 import { ModelDetails } from './model-details';

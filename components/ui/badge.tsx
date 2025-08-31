@@ -10,11 +10,13 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          'border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90',
+          'border-transparent bg-gradient-to-r from-primary to-primary/75 text-primary-foreground [a&]:hover:bg-gradient-to-r [a&]:hover:from-primary/70 [a&]:hover:to-primary/60',
         secondary:
-          'border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90',
+          'border-transparent bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground [a&]:hover:bg-gradient-to-r [a&]:hover:from-secondary/75 [a&]:hover:to-secondary/65',
         destructive:
-          'border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+          'border-transparent bg-gradient-to-r from-destructive to-destructive/70 text-white [a&]:hover:bg-gradient-to-r [a&]:hover:from-destructive/65 [a&]:hover:to-destructive/55 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-gradient-to-r dark:from-destructive/50 dark:to-destructive/40',
+        success:
+          'border-transparent bg-gradient-to-r from-success to-success/70 text-white [a&]:hover:bg-gradient-to-r [a&]:hover:from-success/65 [a&]:hover:to-success/55 focus-visible:ring-success/20 dark:focus-visible:ring-success/40 dark:bg-gradient-to-r dark:from-success/50 dark:to-success/40',
         outline:
           'text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
       },

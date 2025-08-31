@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { type DragEndEvent, type DragStartEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
-import { allModels, type Model } from '@/lib/models/models';
+import { allModels, type Model } from '@/lib/models';
 import {
   getUserPreferencesQuery,
   useUpdatePreferencesMutation,
@@ -75,7 +75,8 @@ export function ModelsSettings({}: ModelsSettingsProps) {
 
   const persistFavorites = (ids: string[]) => {
     setFavoriteModelIds(ids);
-    updateMutation.mutate({ favoriteModels: ids });
+    // Use debounced mutation to prevent excessive API calls during rapid interactions
+    updateMutation.debouncedMutate({ favoriteModels: ids });
   };
 
   const addToFavorites = (model: Model) => {

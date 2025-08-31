@@ -25,15 +25,20 @@ export function LoginPage({ className, redirectTo = '/' }: LoginPageProps) {
   return (
     <div
       className={cn(
-        'min-h-screen flex items-center justify-center relative w-full h-full',
+        'min-h-screen flex items-center justify-center relative w-full h-full bg-transparent',
         className,
       )}
     >
-      <Galaxy />
+      <Galaxy
+        density={1.5}
+        glowIntensity={0.5}
+        saturation={0.1}
+        hueShift={240}
+      />
 
-      <div className="absolute inset-0 flex items-center justify-center p-4">
+      <div className="inset-0 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <Card className="bg-card/50 backdrop-blur-md">
+          <Card className="bg-card/75 backdrop-blur-md">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl font-bold">Welcome</CardTitle>
               <CardDescription className="text-lg">

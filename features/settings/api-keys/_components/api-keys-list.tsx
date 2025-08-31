@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-// Removed Badge (default badge no longer needed)
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -19,27 +18,31 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
-  Key,
-  Eye,
-  EyeOff,
-  Loader2,
-  Star,
-  Trash2,
-  ExternalLink,
-} from 'lucide-react';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal } from 'lucide-react';
+import { Key, Eye, EyeOff, Loader2, Star, Trash2 } from 'lucide-react';
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { ApiKey, apiKeyQueryKeys } from '@/lib/types/api-keys';
 import { getProviderInfo } from '@/lib/models/providers';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  useIsMutating,
+} from '@tanstack/react-query';
 import { apiKeysService } from '@/lib/api/client/keys';
 import { toast } from 'sonner';
-import { useIsMutating } from '@tanstack/react-query';
 import { AddApiKeyDialog } from './add-api-key-dialog';
 import { EditApiKeyDialog } from './edit-api-key-dialog';
 import { formatDistanceToNow } from 'date-fns';
@@ -52,24 +55,55 @@ interface ApiKeysListProps {
 export function ApiKeysList({ keys }: ApiKeysListProps) {
   if (!keys.length) return <EmptyState />;
 
-  const groupedKeys = keys.reduce(
-    (acc, key) => {
-      (acc[key.provider] ||= []).push(key);
-      return acc;
-    },
-    {} as Record<string, ApiKey[]>,
-  );
-
   return (
-    // 24px vertical rhythm between provider sections (8pt * 3)
-    <div className="space-y-6">
-      {Object.entries(groupedKeys).map(([providerId, providerKeys]) => (
-        <ProviderCard
-          key={providerId}
-          providerId={providerId}
-          keys={providerKeys}
-        />
-      ))}
+    <div className="rounded-lg border bg-card">
+      <Table containerClassName="p-0 rounded-none bg-transparent">
+        <TableBody>
+          {Object.entries(
+            keys.reduce(
+              (acc, key) => {
+                (acc[key.provider] ||= []).push(key);
+                return acc;
+              },
+              {} as Record<string, ApiKey[]>,
+            ),
+          ).map(([providerId, providerKeys], idx) => {
+            const providerInfo = getProviderInfo(providerId);
+            const Icon = providerInfo?.Icon;
+            return (
+              <Fragment key={providerId}>
+                <TableRow
+                  className={
+                    idx > 0
+                      ? 'border-0 border-t hover:bg-transparent'
+                      : 'border-0 hover:bg-transparent'
+                  }
+                >
+                  <TableCell colSpan={2} className="pt-4 pl-4">
+                    <div className="flex items-center gap-3">
+                      {Icon ? (
+                        <Icon className="h-5 w-5" />
+                      ) : (
+                        <div className="h-5 w-5 rounded bg-muted" />
+                      )}
+                      <span className="font-medium">
+                        {providerInfo?.name ?? providerId}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {providerKeys.length} key
+                        {providerKeys.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+                {providerKeys.map(k => (
+                  <ApiKeyRow key={k.id} apiKey={k} />
+                ))}
+              </Fragment>
+            );
+          })}
+        </TableBody>
+      </Table>
     </div>
   );
 }
@@ -78,12 +112,12 @@ function EmptyState() {
   return (
     <Card>
       <CardHeader className="text-center pb-2">
-        <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-          <Key className="h-6 w-6 text-muted-foreground" />
+        <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
+          <Key className="h-5 w-5 text-muted-foreground" />
         </div>
-        <CardTitle>No API Keys</CardTitle>
-        <CardDescription>
-          Add your first API key to start using AI models in your projects.
+        <CardTitle className="text-base">No API Keys</CardTitle>
+        <CardDescription className="text-sm">
+          Add your first key to get started.
         </CardDescription>
       </CardHeader>
       <CardContent className="text-center pt-0">
@@ -93,67 +127,13 @@ function EmptyState() {
   );
 }
 
-interface ProviderCardProps {
-  providerId: string;
-  keys: ApiKey[];
-}
-
-function ProviderCard({ providerId, keys }: ProviderCardProps) {
-  const providerInfo = getProviderInfo(providerId);
-  const Icon = providerInfo?.Icon;
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          {/* 16px gap keeps icon + text grouping tight while distinct from 24px card spacing */}
-          <div className="flex items-center gap-4">
-            <div className="text-2xl">
-              {Icon && <Icon className="size-8" />}
-            </div>
-            <div>
-              <CardTitle className="text-lg">{providerInfo?.name}</CardTitle>
-              <CardDescription>
-                {keys.length} key{keys.length !== 1 ? 's' : ''} configured
-              </CardDescription>
-            </div>
-          </div>
-          {providerInfo?.keyPortal && (
-            <Button asChild variant="link" size="sm" className="h-auto px-1">
-              <a
-                href={providerInfo.keyPortal}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Open ${providerInfo.name} API key portal`}
-                className="inline-flex items-center gap-1"
-              >
-                <span>Manage Keys</span>
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-              </a>
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {keys.map(key => (
-            <ApiKeyRow
-              key={key.id}
-              apiKey={key}
-              providerName={providerInfo?.name}
-            />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+// Provider card removed in favor of a compact table layout
 
 interface ApiKeyRowProps {
   apiKey: ApiKey;
-  providerName?: string;
 }
 
-function ApiKeyRow({ apiKey, providerName }: ApiKeyRowProps) {
+function ApiKeyRow({ apiKey }: ApiKeyRowProps) {
   const [showKey, setShowKey] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -244,16 +224,15 @@ function ApiKeyRow({ apiKey, providerName }: ApiKeyRowProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg">
-      {/* Increase internal vertical stack from 4px to 8px for consistent 8pt rhythm */}
-      <div className="flex-1 space-y-2 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
+    <TableRow className="border-0 hover:bg-transparent">
+      <TableCell className="w-full max-w-[520px]">
+        <div className="flex items-center gap-2 min-w-0">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 disabled={isMutating}
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => setShowKey(v => !v)}
                 aria-label={showKey ? 'Hide API key' : 'Show API key'}
               >
@@ -266,7 +245,6 @@ function ApiKeyRow({ apiKey, providerName }: ApiKeyRowProps) {
             </TooltipTrigger>
             <TooltipContent>{showKey ? 'Hide key' : 'Show key'}</TooltipContent>
           </Tooltip>
-          {/* Click-to-copy button styled like code chip */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -274,7 +252,7 @@ function ApiKeyRow({ apiKey, providerName }: ApiKeyRowProps) {
                 onClick={handleCopy}
                 disabled={isMutating}
                 aria-label="Copy API key"
-                className={`text-left font-mono text-sm bg-muted hover:bg-muted/80 transition-colors px-2 py-1 rounded break-all max-w-full relative focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 ${copied ? 'ring-2 ring-ring' : ''}`}
+                className={`text-left font-mono text-xs bg-muted hover:bg-muted/80 transition-colors px-2 py-1 rounded whitespace-nowrap overflow-hidden text-ellipsis max-w-full sm:max-w-[420px] relative focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 ${copied ? 'ring-2 ring-ring' : ''}`}
               >
                 {showKey ? apiKey.key : masked}
                 <span className="absolute inset-0" aria-hidden="true" />
@@ -285,110 +263,225 @@ function ApiKeyRow({ apiKey, providerName }: ApiKeyRowProps) {
             </TooltipContent>
           </Tooltip>
         </div>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="mt-2 flex items-center justify-between md:hidden">
+          <span className="text-sm text-muted-foreground">
+            {(() => {
+              const createdAt = new Date(apiKey.createdAt);
+              return `Added ${formatDistanceToNow(createdAt, { addSuffix: true })}`;
+            })()}
+          </span>
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={() =>
+                      !apiKey.default && setDefaultMutation.mutate(apiKey.id)
+                    }
+                    disabled={
+                      apiKey.default ||
+                      setDefaultMutation.isPending ||
+                      isMutating
+                    }
+                    aria-label={
+                      apiKey.default
+                        ? 'Current default key'
+                        : 'Make this key default'
+                    }
+                  >
+                    {setDefaultMutation.isPending &&
+                    setDefaultMutation.variables === apiKey.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Star
+                          className={
+                            'h-4 w-4 mr-2 ' +
+                            (apiKey.default ? 'fill-current' : '')
+                          }
+                        />
+                        Default
+                      </>
+                    )}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {apiKey.default ? 'This is the default key' : 'Set as default'}
+              </TooltipContent>
+            </Tooltip>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="More actions">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <EditApiKeyDialog
+                  apiKey={apiKey}
+                  disabled={isMutating}
+                  trigger={
+                    // prevent default so the menu doesn't steal focus before dialog opens
+                    <DropdownMenuItem onSelect={e => e.preventDefault()}>
+                      Edit
+                    </DropdownMenuItem>
+                  }
+                />
+                <DropdownMenuSeparator />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem
+                      onSelect={e => e.preventDefault()}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete API Key</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this API key? This
+                        action cannot be undone.
+                        {apiKey.default && (
+                          <span className="block mt-2 font-medium text-orange-600">
+                            This is your default key.
+                          </span>
+                        )}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => deleteMutation.mutate(apiKey.id)}
+                        disabled={deleteMutation.isPending || isMutating}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {deleteMutation.isPending &&
+                        deleteMutation.variables === apiKey.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : null}
+                        Delete Key
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="text-right hidden md:table-cell">
+        <div className="flex items-center gap-3 justify-end">
           {(() => {
             const createdAt = new Date(apiKey.createdAt);
-            const updatedAt = new Date(apiKey.updatedAt);
-            // Consider it "updated" if timestamps differ by more than 1 minute
-            const isUpdated =
-              Math.abs(updatedAt.getTime() - createdAt.getTime()) > 60_000;
-            const refTime = isUpdated ? updatedAt : createdAt;
             return (
-              <span>
-                {isUpdated ? 'Updated' : 'Added'}{' '}
-                {formatDistanceToNow(refTime, { addSuffix: true })}
+              <span className="text-sm text-muted-foreground">
+                {`Added ${formatDistanceToNow(createdAt, { addSuffix: true })}`}
               </span>
             );
           })()}
-        </div>
-      </div>
-      <div className="flex items-center gap-2 flex-wrap">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button
-                variant={apiKey.default ? 'secondary' : 'outline'}
-                size="sm"
-                onClick={() =>
-                  !apiKey.default && setDefaultMutation.mutate(apiKey.id)
-                }
-                disabled={
-                  apiKey.default || setDefaultMutation.isPending || isMutating
-                }
-                aria-label={
-                  apiKey.default
-                    ? 'Current default key'
-                    : 'Make this key default'
-                }
-              >
-                {setDefaultMutation.isPending &&
-                setDefaultMutation.variables === apiKey.id ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    {/* Increase icon/text separation to 8px to align with spacing scale */}
-                    <Star
-                      className={
-                        'h-4 w-4 mr-2 ' + (apiKey.default ? 'fill-current' : '')
-                      }
-                    />
-                    Default
-                  </>
-                )}
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            {apiKey.default ? 'This is the default key' : 'Set as default'}
-          </TooltipContent>
-        </Tooltip>
-        <EditApiKeyDialog apiKey={apiKey} disabled={isMutating} />
-        <AlertDialog>
           <Tooltip>
             <TooltipTrigger asChild>
-              <AlertDialogTrigger asChild>
+              <span>
                 <Button
-                  disabled={isMutating}
-                  variant="outline"
-                  size="sm"
-                  aria-label="Delete API key"
+                  variant="ghost"
+                  size="xs"
+                  onClick={() =>
+                    !apiKey.default && setDefaultMutation.mutate(apiKey.id)
+                  }
+                  disabled={
+                    apiKey.default || setDefaultMutation.isPending || isMutating
+                  }
+                  aria-label={
+                    apiKey.default
+                      ? 'Current default key'
+                      : 'Make this key default'
+                  }
                 >
-                  <Trash2 className="h-4 w-4" />
+                  {setDefaultMutation.isPending &&
+                  setDefaultMutation.variables === apiKey.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Star
+                        className={
+                          'h-4 w-4 mr-2 ' +
+                          (apiKey.default ? 'fill-current' : '')
+                        }
+                      />
+                      Default
+                    </>
+                  )}
                 </Button>
-              </AlertDialogTrigger>
+              </span>
             </TooltipTrigger>
-            <TooltipContent>Delete key</TooltipContent>
+            <TooltipContent>
+              {apiKey.default ? 'This is the default key' : 'Set as default'}
+            </TooltipContent>
           </Tooltip>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete API Key</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete this API key? This action cannot
-                be undone.
-                {apiKey.default && (
-                  <span className="block mt-2 font-medium text-orange-600">
-                    This is your default key for {providerName}.
-                  </span>
-                )}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => deleteMutation.mutate(apiKey.id)}
-                disabled={deleteMutation.isPending || isMutating}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {deleteMutation.isPending &&
-                deleteMutation.variables === apiKey.id ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : null}
-                Delete Key
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-    </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="More actions">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <EditApiKeyDialog
+                apiKey={apiKey}
+                disabled={isMutating}
+                trigger={
+                  // prevent default so the menu doesn't steal focus before dialog opens
+                  <DropdownMenuItem onSelect={e => e.preventDefault()}>
+                    Edit
+                  </DropdownMenuItem>
+                }
+              />
+              <DropdownMenuSeparator />
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem
+                    onSelect={e => e.preventDefault()}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete API Key</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this API key? This action
+                      cannot be undone.
+                      {apiKey.default && (
+                        <span className="block mt-2 font-medium text-orange-600">
+                          This is your default key.
+                        </span>
+                      )}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => deleteMutation.mutate(apiKey.id)}
+                      disabled={deleteMutation.isPending || isMutating}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {deleteMutation.isPending &&
+                      deleteMutation.variables === apiKey.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : null}
+                      Delete Key
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }

@@ -116,21 +116,20 @@ export function AddApiKeyDialog({ disabled = false }: { disabled?: boolean }) {
   return (
     <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
       <DialogTrigger asChild>
-        <Button disabled={disabled}>
+        <Button disabled={disabled} size="sm">
           <Plus className="h-4 w-4 mr-2" />
           Add API Key
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md space-y-5">
+      <DialogContent className="sm:max-w-sm space-y-4">
         <DialogHeader>
           <DialogTitle>Add New API Key</DialogTitle>
-          <DialogDescription className="text-sm leading-relaxed max-w-prose">
-            Add an API key for your preferred AI provider. Stored encrypted &
-            only used server-side.
+          <DialogDescription className="text-xs leading-relaxed">
+            Store an encrypted provider key for server-side use.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-5">
-          <div className="grid gap-2">
+        <div className="grid gap-4">
+          <div className="grid gap-1.5">
             <Label htmlFor="provider">Provider</Label>
             <Select
               value={selectedProvider}
@@ -140,7 +139,9 @@ export function AddApiKeyDialog({ disabled = false }: { disabled?: boolean }) {
                 <SelectValue placeholder="Select AI provider" />
               </SelectTrigger>
               <SelectContent>
-                {AI_PROVIDERS.map(provider => (
+                {AI_PROVIDERS.filter(
+                  provider => provider.enabled !== false,
+                ).map(provider => (
                   <SelectItem key={provider.id} value={provider.id}>
                     <div className="flex items-center gap-2">
                       <provider.Icon className="h-4 w-4" />
@@ -151,7 +152,7 @@ export function AddApiKeyDialog({ disabled = false }: { disabled?: boolean }) {
               </SelectContent>
             </Select>
             {selectedProviderInfo && (
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 text-[11px] text-muted-foreground">
                 <span>Format: {selectedProviderInfo.keyFormat}</span>
                 {selectedProviderInfo.keyPortal && (
                   <a
@@ -168,7 +169,7 @@ export function AddApiKeyDialog({ disabled = false }: { disabled?: boolean }) {
               </div>
             )}
           </div>
-          <div className="grid gap-2">
+          <div className="grid gap-1.5">
             <Label htmlFor="api-key">API Key</Label>
             <div className="flex items-center gap-2">
               <Input
@@ -184,7 +185,7 @@ export function AddApiKeyDialog({ disabled = false }: { disabled?: boolean }) {
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
+                    size="icon"
                     onClick={() => setShowKey(s => !s)}
                     aria-label={showKey ? 'Hide key' : 'Show key'}
                   >
@@ -212,6 +213,7 @@ export function AddApiKeyDialog({ disabled = false }: { disabled?: boolean }) {
             variant="outline"
             onClick={() => setShowAddDialog(false)}
             disabled={createMutation.isPending}
+            size="sm"
           >
             Cancel
           </Button>
@@ -223,6 +225,7 @@ export function AddApiKeyDialog({ disabled = false }: { disabled?: boolean }) {
               !newKeyValue.trim() ||
               !isPatternValid
             }
+            size="sm"
           >
             {createMutation.isPending && (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { auth } from '@/lib/auth/auth';
-import { SettingsContent } from '@/features/settings/settings-content';
+import { SettingsContent } from '@/features/settings';
 
 interface SettingsPageProps {
   params: Promise<{ setting: string[] }>;

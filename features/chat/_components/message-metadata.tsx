@@ -1,6 +1,6 @@
-import { getModelDetails } from '@/lib/models/models';
+import { getModelDetails } from '@/lib/models';
 import { AIMessage } from '@/lib/types/ai-message';
-import { ClockIcon, CpuIcon, BarChart3Icon, ZapIcon } from 'lucide-react';
+import { ClockIcon, BracketsIcon, ZapIcon } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -31,15 +31,19 @@ export function MessageMetadata({ message }: { message: AIMessage }) {
     1000;
 
   return (
-    <div className="flex text-sm text-muted-foreground items-center">
-      {modelName && <p>{modelName}</p>}
+    <div className="flex gap-1 items-center">
+      {modelName && (
+        <p className="bg-gradient-to-l from-muted-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+          {modelName}
+        </p>
+      )}
       {(totalTokens || tokensPerSecond || timeToFirstTokenSeconds) && (
         <Popover>
           <Tooltip>
             <TooltipTrigger asChild>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <CpuIcon className="size-4" />
+                <Button variant="ghost" size="xs">
+                  <ZapIcon className="size-4" />
                 </Button>
               </PopoverTrigger>
             </TooltipTrigger>
@@ -50,19 +54,19 @@ export function MessageMetadata({ message }: { message: AIMessage }) {
               <h4 className="font-medium text-sm">Stats for Nerds</h4>
               {totalTokens && (
                 <p className="flex items-center gap-2">
-                  <CpuIcon className="size-3" />
+                  <BracketsIcon className="size-4" />
                   {totalTokens} tokens
                 </p>
               )}
               {tokensPerSecond && (
                 <p className="flex items-center gap-2">
-                  <ZapIcon className="size-3" />
+                  <ZapIcon className="size-4" />
                   {tokensPerSecond.toFixed(2)} tokens/sec
                 </p>
               )}
               {timeToFirstTokenSeconds && (
                 <p className="flex items-center gap-2">
-                  <ClockIcon className="size-3" />
+                  <ClockIcon className="size-4" />
                   Time-to-first: {timeToFirstTokenSeconds.toFixed(2)}s
                 </p>
               )}

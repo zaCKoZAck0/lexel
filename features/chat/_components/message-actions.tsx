@@ -1,17 +1,9 @@
 import { Action, Actions } from '@/components/ai-elements/actions';
 import { AIMessage } from '@/lib/types/ai-message';
-import { ChevronDownIcon, ClipboardIcon, RefreshCcwIcon } from 'lucide-react';
-import { CopyIcon } from 'lucide-react';
+import { ChevronDownIcon, CopyIcon } from 'lucide-react';
 import { MessageMetadata } from './message-metadata';
-import { TextUIPart } from 'ai';
 import { toast } from 'sonner';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { TextUIPart } from 'ai';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -22,21 +14,25 @@ import {
 export function MessageActions({
   message,
   part,
-  regenerate,
+  chatId,
+  selectedModelId,
+  messages,
 }: {
   message: AIMessage;
   part: TextUIPart;
-  regenerate: ({
-    messageId,
-    text,
-  }: {
-    messageId: string;
-    text: string;
-  }) => void;
+  chatId?: string;
+  selectedModelId?: string;
+  messages?: AIMessage[];
 }) {
   if (message.role === 'assistant') {
     return (
-      <AssistantActions message={message} part={part} regenerate={regenerate} />
+      <AssistantActions
+        message={message}
+        part={part}
+        chatId={chatId}
+        selectedModelId={selectedModelId}
+        messages={messages}
+      />
     );
   }
   return null;
@@ -45,17 +41,15 @@ export function MessageActions({
 function AssistantActions({
   message,
   part,
-  regenerate,
+  chatId,
+  selectedModelId,
+  messages,
 }: {
   message: AIMessage;
   part: TextUIPart;
-  regenerate: ({
-    messageId,
-    text,
-  }: {
-    messageId: string;
-    text: string;
-  }) => void;
+  chatId?: string;
+  selectedModelId?: string;
+  messages?: AIMessage[];
 }) {
   const handleCopy = async () => {
     try {
@@ -79,30 +73,17 @@ function AssistantActions({
   };
 
   return (
-    <Actions className="mt-2 flex items-center w-full justify-between">
-      {message.role === 'assistant' && <MessageMetadata message={message} />}
+    <Actions className="mt-2 flex items-center w-full gap-1">
       <div className="flex items-center">
+        {message.role === 'assistant' && <MessageMetadata message={message} />}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="sm" onClick={handleCopy}>
-              <ClipboardIcon className="size-4" />
+            <Button variant="ghost" size="xs" onClick={handleCopy}>
+              <CopyIcon className="size-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom">Copy</TooltipContent>
         </Tooltip>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
-              Retry <RefreshCcwIcon className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side="top" className="p-2">
-            <Button variant="secondary" size="sm">
-              <RefreshCcwIcon className="size-4" />
-              With no changes
-            </Button>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </Actions>
   );

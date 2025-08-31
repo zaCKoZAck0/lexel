@@ -1,6 +1,6 @@
 import { Chat } from '@/features/chat';
 import { auth } from '@/lib/auth/auth';
-import { getModelDetails } from '@/lib/models/models';
+import { getModelDetails } from '@/lib/models';
 import { getChatByIdWithMessages } from '@/lib/api/server/services/chat';
 import { getByUserId } from '@/lib/api/server/services/user-preferences';
 import { convertToUIMessages } from '@/lib/utils/utils';
@@ -17,8 +17,6 @@ export default async function ChatPage({
   const chat = await getChatByIdWithMessages(awaitedParams.id);
 
   if (!chat || chat.userId !== session?.user?.id) {
-    console.log(chat);
-    console.log(session);
     return notFound();
   }
 

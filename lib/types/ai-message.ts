@@ -8,6 +8,7 @@ export const messageMetadataSchema = z.object({
   requestStartTimeMs: z.number().optional(),
   responseStartTimeMs: z.number().optional(),
   responseEndTimeMs: z.number().optional(),
+  reasoningTime: z.number().optional(),
 });
 
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;

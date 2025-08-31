@@ -4,6 +4,7 @@ import { User } from 'next-auth';
 import { AccountSettings } from '@/features/settings/account-settings';
 import { ApiKeys } from '@/features/settings/api-keys';
 import { ModelsSettings } from '@/features/settings/models';
+import { HistorySettings } from '@/features/settings/history/history-settings';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface SettingsContentProps {
@@ -20,6 +21,8 @@ export function SettingsContent({ activeTab, user }: SettingsContentProps) {
         return <ApiKeys />;
       case 'models':
         return <ModelsSettings />;
+      case 'history':
+        return <HistorySettings />;
       default:
         return (
           <Card>

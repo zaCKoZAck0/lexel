@@ -1,0 +1,68 @@
+import { Model } from '.';
+
+export const anthropicModels: Model[] = [
+  {
+    id: 'anthropic:claude-opus-4',
+    name: 'Claude 4 Opus',
+    provider: 'anthropic',
+    isReasoning: true,
+    hybridReasoning: true,
+    modalities: ['text', 'image'],
+    features: ['tool-calling'],
+    modelType: 'chat',
+    contextWindow: 200_000,
+    priceInUSD: {
+      input: 15,
+      output: 75,
+      per: '1M tokens',
+    },
+  },
+  {
+    id: 'anthropic:claude-opus-4.1',
+    name: 'Claude 4.1 Opus',
+    provider: 'anthropic',
+    isReasoning: true,
+    hybridReasoning: true,
+    modalities: ['text', 'image'],
+    features: ['tool-calling'],
+    modelType: 'chat',
+    contextWindow: 200_000,
+    priceInUSD: {
+      input: 15,
+      output: 75,
+      per: '1M tokens',
+    },
+  },
+  {
+    id: 'anthropic:claude-sonnet-4-20250514',
+    name: 'Claude Sonnet 4',
+    provider: 'anthropic',
+    isReasoning: true,
+    hybridReasoning: true,
+    modalities: ['text', 'image'],
+    features: ['tool-calling'],
+    modelType: 'chat',
+    contextWindow: 200_000,
+    priceInUSD: {
+      input: 3,
+      output: 15,
+      per: '1M tokens',
+    },
+  },
+  {
+    id: 'anthropic:claude-3-7-sonnet',
+    name: 'Claude 3.7 Sonnet',
+    provider: 'anthropic',
+    isReasoning: true,
+    hybridReasoning: true,
+    modalities: ['text', 'image'],
+    features: ['tool-calling'],
+    modelType: 'chat',
+    contextWindow: 200_000,
+    priceInUSD: {
+      input: 3,
+      output: 15,
+      per: '1M tokens',
+    },
+  },
+];

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { allModels } from '@/lib/models/models';
+import { allModels } from '@/lib/models';
 
 // Full schema for a complete preferences object
 export const userPreferencesSchema = z.object({

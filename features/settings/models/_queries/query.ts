@@ -3,6 +3,7 @@ import { preferencesApi } from '@/lib/api/client/preferences';
 import { providersApi } from '@/lib/api/client/providers';
 import type { UserPreferences } from '@/lib/types/user-preferences';
 import { toast } from 'sonner';
+import { useMemo, useRef } from 'react';
 
 export const preferencesQueryKeys = {
   root: ['preferences'] as const,
@@ -11,6 +12,27 @@ export const preferencesQueryKeys = {
 export const providersQueryKeys = {
   root: ['providers'] as const,
 };
+
+/**
+ * Custom debounce utility for React Query mutations
+ * Following best practices from React Query documentation
+ */
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  delay: number,
+): T {
+  let timeoutId: NodeJS.Timeout | null = null;
+
+  return ((...args: any[]) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    timeoutId = setTimeout(() => {
+      func(...args);
+    }, delay);
+  }) as T;
+}
 
 export function getUserPreferencesQuery() {
   const query = useQuery<UserPreferences | null, Error>({
@@ -24,7 +46,8 @@ export function getUserPreferencesQuery() {
 
 export function useUpdatePreferencesMutation() {
   const queryClient = useQueryClient();
-  return useMutation<
+
+  const mutation = useMutation<
     UserPreferences,
     Error,
     Partial<UserPreferences>,
@@ -67,6 +90,28 @@ export function useUpdatePreferencesMutation() {
       queryClient.invalidateQueries({ queryKey: preferencesQueryKeys.root });
     },
   });
+
+  // Store the original mutate function in a ref to ensure stability
+  const mutateRef = useRef(mutation.mutate);
+
+  // Update the ref when mutation.mutate changes
+  mutateRef.current = mutation.mutate;
+
+  // Create a debounced version of the mutate function (300ms delay)
+  const debouncedMutate = useMemo(
+    () =>
+      debounce((variables: Partial<UserPreferences>) => {
+        mutateRef.current(variables);
+      }, 300),
+    [],
+  );
+
+  return {
+    ...mutation,
+    debouncedMutate,
+    // Also provide the original mutate for immediate actions if needed
+    mutate: mutation.mutate,
+  };
 }
 
 export function availableProvidersQuery() {

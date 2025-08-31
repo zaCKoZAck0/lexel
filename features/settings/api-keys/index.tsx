@@ -8,7 +8,6 @@ import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,
   TooltipContent,
@@ -39,11 +38,7 @@ export function ApiKeys() {
     });
   }, [sortedKeys, query]);
 
-  const totalKeys = keys?.length || 0;
-  const totalProviders = useMemo(
-    () => new Set((keys || []).map(k => k.provider)).size,
-    [keys],
-  );
+  // Removed top-level counts UI; keep logic simple
 
   if (isLoading) {
     return (
@@ -61,10 +56,6 @@ export function ApiKeys() {
               <Skeleton className="h-9 w-9 rounded-md" />
               <Skeleton className="h-9 w-28 rounded-md" />
             </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Skeleton className="h-6 w-24 rounded-full" />
-            <Skeleton className="h-6 w-28 rounded-full" />
           </div>
         </CardHeader>
         <CardContent className="pt-0 space-y-4">
@@ -116,7 +107,7 @@ export function ApiKeys() {
         <div className="space-y-1">
           <h1 className="text-xl font-semibold">API Keys</h1>
           <p className="text-sm text-muted-foreground">
-            Securely store and manage your AI provider keys (256-bit
+            Securely store and manage your AI provider api keys (256-bit
             encryption).
           </p>
         </div>
@@ -148,14 +139,9 @@ export function ApiKeys() {
             <AddApiKeyDialog />
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="outline" className="text-xs font-normal">
-            {totalKeys} {totalKeys === 1 ? 'Key' : 'Keys'}
-          </Badge>
-          <Badge variant="outline" className="text-xs font-normal">
-            {totalProviders} {totalProviders === 1 ? 'Provider' : 'Providers'}
-          </Badge>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Limit: up to 5 keys per provider.
+        </p>
       </div>
       <div className="pt-0 space-y-4">
         <ApiKeysList keys={filtered} />
