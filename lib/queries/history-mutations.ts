@@ -13,6 +13,12 @@ import type {
   HistoryBatchDeleteParams,
 } from '@/lib/types/history';
 
+type HistoryListData = {
+  data: HistoryItem[];
+  hasMore: boolean;
+  nextCursor: string | null;
+};
+
 export function useDeleteHistoryItem() {
   const queryClient = useQueryClient();
 
@@ -20,7 +26,7 @@ export function useDeleteHistoryItem() {
     { message: string },
     ApiRequestError,
     HistoryDeleteParams,
-    { previousData: InfiniteData<any> | undefined }
+    { previousData: InfiniteData<HistoryListData> | undefined }
   >({
     mutationFn: async params => {
       const resp = await historyService.deleteItem(params);
@@ -32,18 +38,14 @@ export function useDeleteHistoryItem() {
       });
 
       const previousData = queryClient.getQueryData<
-        InfiniteData<{
-          data: HistoryItem[];
-          hasMore: boolean;
-          nextCursor: string | null;
-        }>
+        InfiniteData<HistoryListData>
       >(historyQueryKeys.list({}));
 
       queryClient.setQueryData(
         historyQueryKeys.list({}),
-        (old: InfiniteData<any> | undefined) => {
+        (old: InfiniteData<HistoryListData> | undefined) => {
           if (!old) return old;
-          const newPages = old.pages.map((page: any) => ({
+          const newPages = old.pages.map((page: HistoryListData) => ({
             ...page,
             data: page.data.filter((item: HistoryItem) => item.id !== chatId),
           }));
@@ -78,7 +80,7 @@ export function useDeleteHistoryItems() {
     { deletedCount: number },
     ApiRequestError,
     HistoryBatchDeleteParams,
-    { previousData: InfiniteData<any> | undefined }
+    { previousData: InfiniteData<HistoryListData> | undefined }
   >({
     mutationFn: async params => {
       const resp = await historyService.deleteItems(params);
@@ -90,18 +92,14 @@ export function useDeleteHistoryItems() {
       });
 
       const previousData = queryClient.getQueryData<
-        InfiniteData<{
-          data: HistoryItem[];
-          hasMore: boolean;
-          nextCursor: string | null;
-        }>
+        InfiniteData<HistoryListData>
       >(historyQueryKeys.list({}));
 
       queryClient.setQueryData(
         historyQueryKeys.list({}),
-        (old: InfiniteData<any> | undefined) => {
+        (old: InfiniteData<HistoryListData> | undefined) => {
           if (!old) return old;
-          const newPages = old.pages.map((page: any) => ({
+          const newPages = old.pages.map((page: HistoryListData) => ({
             ...page,
             data: page.data.filter(
               (item: HistoryItem) => !chatIds.includes(item.id),

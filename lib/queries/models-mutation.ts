@@ -7,15 +7,14 @@ import { preferencesQueryKeys } from './models-query';
 
 /**
  * Custom debounce utility for React Query mutations
- * Following best practices from React Query documentation
  */
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
+function debounce<Args extends unknown[], R>(
+  func: (...args: Args) => R,
   delay: number,
-): T {
+): (...args: Args) => void {
   let timeoutId: NodeJS.Timeout | null = null;
 
-  return ((...args: any[]) => {
+  return (...args: Args) => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
@@ -23,7 +22,7 @@ function debounce<T extends (...args: any[]) => any>(
     timeoutId = setTimeout(() => {
       func(...args);
     }, delay);
-  }) as T;
+  };
 }
 
 export function useUpdatePreferencesMutation() {
@@ -91,24 +90,6 @@ export function useUpdatePreferencesMutation() {
   return {
     ...mutation,
     debouncedMutate,
-    // Also provide the original mutate for immediate actions if needed
     mutate: mutation.mutate,
   };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -238,7 +238,10 @@ export function InputContainer({
                               key={modelItem.id}
                               value={modelItem.id}
                               onSelect={() => {
-                                setModelInfo(prev => ({ ...prev, modelId: modelItem.id }));
+                                setModelInfo(prev => ({
+                                  ...prev,
+                                  modelId: modelItem.id,
+                                }));
                                 setOpen(false);
                                 setSearchQuery('');
                               }}
@@ -273,7 +276,12 @@ export function InputContainer({
                 <Button
                   size="sm"
                   variant={modelInfo.webSearchEnabled ? 'default' : 'outline'}
-                  onClick={() => setModelInfo(prev => ({ ...prev, webSearchEnabled: !prev.webSearchEnabled }))}
+                  onClick={() =>
+                    setModelInfo(prev => ({
+                      ...prev,
+                      webSearchEnabled: !prev.webSearchEnabled,
+                    }))
+                  }
                   className="rounded-full"
                 >
                   <GlobeIcon className="w-4 h-4" />
@@ -281,13 +289,17 @@ export function InputContainer({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {modelInfo.webSearchEnabled ? 'Disable Search' : 'Enable Search'}
+                {modelInfo.webSearchEnabled
+                  ? 'Disable Search'
+                  : 'Enable Search'}
               </TooltipContent>
             </Tooltip>
 
             {/* Reasoning Toggle - only show if model supports hybrid reasoning */}
             {(() => {
-              const selectedModel = favoriteModels.find(m => m.id === modelInfo.modelId);
+              const selectedModel = favoriteModels.find(
+                m => m.id === modelInfo.modelId,
+              );
               const supportsHybridReasoning = selectedModel?.hybridReasoning;
 
               if (!supportsHybridReasoning) return null;
@@ -297,8 +309,15 @@ export function InputContainer({
                   <TooltipTrigger asChild>
                     <Button
                       size="sm"
-                      variant={modelInfo.thinkingEnabled ? 'default' : 'outline'}
-                      onClick={() => setModelInfo(prev => ({ ...prev, thinkingEnabled: !prev.thinkingEnabled }))}
+                      variant={
+                        modelInfo.thinkingEnabled ? 'default' : 'outline'
+                      }
+                      onClick={() =>
+                        setModelInfo(prev => ({
+                          ...prev,
+                          thinkingEnabled: !prev.thinkingEnabled,
+                        }))
+                      }
                       className="rounded-full"
                     >
                       <BrainIcon className="w-4 h-4" />
@@ -306,7 +325,9 @@ export function InputContainer({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {modelInfo.thinkingEnabled ? 'Disable Thinking' : 'Enable Thinking'}
+                    {modelInfo.thinkingEnabled
+                      ? 'Disable Thinking'
+                      : 'Enable Thinking'}
                   </TooltipContent>
                 </Tooltip>
               );
@@ -314,16 +335,14 @@ export function InputContainer({
 
             {/* Reasoning Effort Selector - only show if model supports effort control and doesn't have hybrid reasoning */}
             {(() => {
-              const selectedModel = favoriteModels.find(m => m.id === modelInfo.modelId);
+              const selectedModel = favoriteModels.find(
+                m => m.id === modelInfo.modelId,
+              );
               const supportsEffortControl =
                 selectedModel?.features.includes('effort-control');
               const hasHybridReasoning = selectedModel?.hybridReasoning;
 
-              if (
-                !supportsEffortControl ||
-                hasHybridReasoning
-              )
-                return null;
+              if (!supportsEffortControl || hasHybridReasoning) return null;
 
               return (
                 <Select
@@ -347,7 +366,9 @@ export function InputContainer({
           </PromptInputTools>
           {status === 'ready' && (
             <PromptInputSubmit
-              disabled={!input.trim() || status !== 'ready' || !modelInfo.modelId}
+              disabled={
+                !input.trim() || status !== 'ready' || !modelInfo.modelId
+              }
               status={status}
             >
               <ArrowUpIcon className="w-4 h-4" />

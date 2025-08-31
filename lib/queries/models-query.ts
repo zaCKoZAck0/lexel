@@ -30,20 +30,3 @@ export function useAvailableProvidersQuery() {
   });
   return { ...query, availableProviders: query.data ?? [] };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

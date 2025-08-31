@@ -7,8 +7,6 @@ import {
   AnthropicIcon,
   GeminiIcon,
   DeepSeekIcon,
-  QwenIcon,
-  XaiIcon,
   VercelIcon,
   MetaIcon,
 } from '@/components/icons/provider-icons';

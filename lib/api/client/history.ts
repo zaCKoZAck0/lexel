@@ -1,4 +1,4 @@
-import { apiRequest, ApiRequestError } from '@/lib/api/client';
+import { apiRequest } from '@/lib/api/client';
 import type {
   HistoryItem,
   HistoryListResponse,

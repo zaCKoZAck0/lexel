@@ -7,7 +7,20 @@ type ProviderOptionsConfig = {
 };
 
 export function getProviderOptions(config: ProviderOptionsConfig = {}) {
-  const options: any = {
+  type ProviderOptions = {
+    openai: {
+      reasoningEffort: 'minimal' | 'low' | 'medium' | 'high';
+    };
+    anthropic: AnthropicProviderOptions;
+    google?: {
+      thinkingConfig: {
+        thinkingBudget: number;
+        includeThoughts: boolean;
+      };
+    };
+  };
+
+  const options: ProviderOptions = {
     openai: {
       reasoningEffort: config.effort || 'low',
     },
@@ -17,7 +30,7 @@ export function getProviderOptions(config: ProviderOptionsConfig = {}) {
         type: config.thinkingEnabled ? 'enabled' : 'disabled',
         budgetTokens: 12000,
       },
-    } satisfies AnthropicProviderOptions,
+    } as AnthropicProviderOptions,
   };
 
   if (config.isReasoning) {

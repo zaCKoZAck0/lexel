@@ -18,7 +18,12 @@ import { getDefaultApiKeyForProvider } from '@/lib/api/server/services/api-keys'
 import { getRegistryModel } from '@/lib/models/model-registry';
 import { getSystemPrompt } from '@/lib/utils/prompts';
 import { getProviderOptions } from '@/lib/models/provider-options';
-import { createChat, getChatById, getMessagesByChatId, saveMessages } from '@/lib/api/server/services/chat';
+import {
+  createChat,
+  getChatById,
+  getMessagesByChatId,
+  saveMessages,
+} from '@/lib/api/server/services/chat';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { convertToUIMessages } from '@/lib/utils/utils';
 import { webSearch } from '@/lib/tools/exa-web-search';
@@ -50,7 +55,6 @@ export async function POST(req: Request) {
       return fail('Rate limit exceeded. Please try again later.', 429);
     }
 
-    
     // Authentication - only logged-in users can access chat
     const session = await auth();
     if (!session?.user?.id) {
@@ -94,17 +98,19 @@ export async function POST(req: Request) {
     }
 
     await saveMessages({
-      messages: [{
-        chatId: id,
-        role: 'user',
-        parts: message.parts as JsonValue,
-        metadata: message.metadata as JsonValue,
-        id: message.id,
-        modelId: 'N/A',
-        attachmentUrls: [],
-        createdAt: new Date(),
-      }],
-    })
+      messages: [
+        {
+          chatId: id,
+          role: 'user',
+          parts: message.parts as JsonValue,
+          metadata: message.metadata as JsonValue,
+          id: message.id,
+          modelId: 'N/A',
+          attachmentUrls: [],
+          createdAt: new Date(),
+        },
+      ],
+    });
 
     const dbMessages = await getMessagesByChatId(id);
     const uiMessages = [...convertToUIMessages(dbMessages), message];
@@ -121,9 +127,11 @@ export async function POST(req: Request) {
             providerApiKey: providerApiKey.key,
           }),
           tools: {
-            ...(modelInfo.webSearchEnabled ? {
-              webSearch,
-            } : {}),
+            ...(modelInfo.webSearchEnabled
+              ? {
+                  webSearch,
+                }
+              : {}),
           },
           stopWhen: stepCountIs(5),
           experimental_transform: smoothStream({ chunking: 'word' }),
@@ -156,7 +164,7 @@ export async function POST(req: Request) {
           result.toUIMessageStream<AIMessage>({
             sendReasoning: true,
             sendSources: true,
-            onFinish: async ({messages}) => {
+            onFinish: async ({ messages }) => {
               await saveMessages({
                 messages: messages.map(message => ({
                   chatId: id,
@@ -168,7 +176,7 @@ export async function POST(req: Request) {
                   id: message.id,
                   createdAt: new Date(),
                 })),
-              })
+              });
             },
             generateMessageId: generateId,
             messageMetadata: ({ part }) => {
@@ -180,6 +188,7 @@ export async function POST(req: Request) {
                 };
               }
               if (part.type === 'finish') {
+                console.log(part.totalUsage);
                 return {
                   totalTokens: part.totalUsage.totalTokens,
                   responseEndTimeMs: performance.now(),

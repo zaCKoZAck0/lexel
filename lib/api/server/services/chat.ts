@@ -4,8 +4,6 @@ import { InputJsonValue } from '@prisma/client/runtime/library';
 import { AppError } from '@/lib/api/server/errors';
 import { UIMessagePart, UIDataTypes, UITools } from 'ai';
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 // DTO type aliases
 export type ChatDTO = Chat;
 export type MessageDTO = Message;
@@ -76,7 +74,7 @@ interface UpdateMessageInput {
   messageId: string;
   chatId: string;
   parts?: UIMessagePart<UIDataTypes, UITools>[];
-  metadata?: Record<string, any>;
+  metadata?: InputJsonValue;
   attachmentUrls?: string[];
 }
 
@@ -118,8 +116,8 @@ export async function createChat(data: CreateChatInput): Promise<ChatDTO> {
       },
     });
     return chat;
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to create chat', 500);
   }
 }
@@ -134,8 +132,8 @@ export async function getChatById(chatId: string): Promise<ChatDTO | null> {
         id: chatId,
       },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to retrieve chat', 500);
   }
 }
@@ -155,8 +153,8 @@ export async function getChatByIdWithMessages(
         messages: true,
       },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to retrieve chat with messages', 500);
   }
 }
@@ -174,8 +172,8 @@ export async function getChatsByUserId(userId: string): Promise<ChatDTO[]> {
         createdAt: 'desc',
       },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to retrieve user chats', 500);
   }
 }
@@ -204,11 +202,11 @@ export async function updateChatTitle(
     return await prisma.chat.findUnique({
       where: { id: data.chatId },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (_error instanceof AppError) {
-      throw _error;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
     }
+    console.error(error);
     throw new AppError('Failed to update chat title', 500);
   }
 }
@@ -231,11 +229,11 @@ export async function deleteChat(
     if (result.count === 0) {
       throw new AppError('Chat not found or unauthorized', 404);
     }
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (_error instanceof AppError) {
-      throw _error;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
     }
+    console.error(error);
     throw new AppError('Failed to delete chat', 500);
   }
 }
@@ -268,11 +266,11 @@ export async function addMessage(
         attachmentUrls: data.attachmentUrls || [],
       },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (_error instanceof AppError) {
-      throw _error;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
     }
+    console.error(error);
     throw new AppError('Failed to add message', 500);
   }
 }
@@ -292,8 +290,8 @@ export async function getMessagesByChatId(
         createdAt: 'asc',
       },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to retrieve messages', 500);
   }
 }
@@ -322,11 +320,11 @@ export async function saveMessages(data: SaveMessagesInput): Promise<void> {
         metadata: message.metadata as InputJsonValue,
       })),
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (_error instanceof AppError) {
-      throw _error;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
     }
+    console.error(error);
     throw new AppError('Failed to save messages', 500);
   }
 }
@@ -348,11 +346,11 @@ export async function deleteMessages(messageIds: string[]): Promise<void> {
         id: { in: messageIds },
       },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (_error instanceof AppError) {
-      throw _error;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
     }
+    console.error(error);
     throw new AppError('Failed to delete messages', 500);
   }
 }
@@ -383,11 +381,11 @@ export async function updateChatVisibility(
     return await prisma.chat.findUnique({
       where: { id: data.chatId },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (_error instanceof AppError) {
-      throw _error;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
     }
+    console.error(error);
     throw new AppError('Failed to update chat visibility', 500);
   }
 }
@@ -435,8 +433,8 @@ export async function getChatsByUserIdPaginated(
       hasMore,
       nextCursor,
     };
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to retrieve paginated chats', 500);
   }
 }
@@ -481,8 +479,8 @@ export async function getMessagesByChatIdPaginated(
       hasMore,
       nextCursor,
     };
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to retrieve paginated messages', 500);
   }
 }
@@ -515,8 +513,8 @@ export async function searchChats(data: SearchChatsInput): Promise<ChatDTO[]> {
       take: limit,
       skip: offset,
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to search chats', 500);
   }
 }
@@ -531,8 +529,8 @@ export async function getMessageById(
     return await prisma.message.findUnique({
       where: { id: messageId },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to retrieve message', 500);
   }
 }
@@ -548,8 +546,8 @@ export async function getMessageByIdWithVotes(
       where: { id: messageId },
       include: { votes: true },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to retrieve message with votes', 500);
   }
 }
@@ -561,7 +559,13 @@ export async function updateMessage(
   data: UpdateMessageInput,
 ): Promise<MessageDTO | null> {
   try {
-    const updateData: any = {};
+    type MessageUpdateData = {
+      parts?: InputJsonValue;
+      metadata?: InputJsonValue;
+      attachmentUrls?: string[];
+    };
+
+    const updateData: MessageUpdateData = {};
 
     if (data.parts !== undefined) {
       updateData.parts = data.parts as InputJsonValue;
@@ -586,8 +590,8 @@ export async function updateMessage(
           where: { id: data.messageId },
         }),
       );
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to update message', 500);
   }
 }
@@ -603,8 +607,8 @@ export async function getChatByIdWithStreams(
       where: { id: chatId },
       include: { streams: true },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to retrieve chat with streams', 500);
   }
 }
@@ -623,8 +627,8 @@ export async function createStream(
         chatId: data.chatId,
       },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to create stream', 500);
   }
 }
@@ -638,8 +642,8 @@ export async function getStreamsByChatId(chatId: string): Promise<StreamDTO[]> {
       where: { chatId },
       orderBy: { createdAt: 'asc' },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to retrieve streams', 500);
   }
 }
@@ -652,8 +656,8 @@ export async function deleteStreamsByChatId(chatId: string): Promise<void> {
     await prisma.stream.deleteMany({
       where: { chatId },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to delete streams', 500);
   }
 }
@@ -682,8 +686,8 @@ export async function upsertVote(data: CreateVoteInput): Promise<VoteDTO> {
         isUpvoted: data.isUpvoted,
       },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to upsert vote', 500);
   }
 }
@@ -696,8 +700,8 @@ export async function getVotesByChatId(chatId: string): Promise<VoteDTO[]> {
     return await prisma.vote.findMany({
       where: { chatId },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to retrieve votes', 500);
   }
 }
@@ -712,8 +716,8 @@ export async function getVotesByMessageId(
     return await prisma.vote.findMany({
       where: { messageId },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to retrieve votes', 500);
   }
 }
@@ -734,8 +738,8 @@ export async function deleteVote(
         },
       },
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to delete vote', 500);
   }
 }
@@ -766,11 +770,11 @@ export async function bulkDeleteChats(
     });
 
     return result.count;
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (_error instanceof AppError) {
-      throw _error;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
     }
+    console.error(error);
     throw new AppError('Failed to bulk delete chats', 500);
   }
 }
@@ -800,11 +804,11 @@ export async function bulkUpdateChatVisibility(
     });
 
     return result.count;
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    if (_error instanceof AppError) {
-      throw _error;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
     }
+    console.error(error);
     throw new AppError('Failed to bulk update chat visibility', 500);
   }
 }
@@ -853,8 +857,8 @@ export async function getChatStats(userId: string): Promise<{
       privateChats,
       recentChats,
     };
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to get chat statistics', 500);
   }
 }
@@ -873,8 +877,8 @@ export async function checkChatAccess(
     });
 
     return chat?.userId === userId;
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     return false;
   }
 }
@@ -892,8 +896,8 @@ export async function getRecentChats(
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
-  } catch (_error) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error(error);
     throw new AppError('Failed to get recent chats', 500);
   }
 }

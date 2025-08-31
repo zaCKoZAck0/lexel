@@ -91,6 +91,8 @@ export const XaiIcon = React.forwardRef<SVGSVGElement, ProviderIconProps>(
         width="16"
         height="16"
         fill="currentColor"
+        ref={ref}
+        {...props}
       >
         <g>
           <polygon

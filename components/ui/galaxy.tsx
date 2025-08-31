@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Renderer, Program, Mesh, Color, Triangle } from "ogl";
-import { useEffect, useRef } from "react";
+import { Renderer, Program, Mesh, Color, Triangle } from 'ogl';
+import { useEffect, useRef } from 'react';
 
 const vertexShader = `
 attribute vec2 uv;
@@ -232,7 +232,7 @@ export default function Galaxy({
       gl.clearColor(0, 0, 0, 1);
     }
 
-    let program: Program;
+    let program: Program | null = null;
 
     function resize() {
       const scale = 1;
@@ -241,11 +241,11 @@ export default function Galaxy({
         program.uniforms.uResolution.value = new Color(
           gl.canvas.width,
           gl.canvas.height,
-          gl.canvas.width / gl.canvas.height
+          gl.canvas.width / gl.canvas.height,
         );
       }
     }
-    window.addEventListener("resize", resize, false);
+    window.addEventListener('resize', resize, false);
     resize();
 
     const geometry = new Triangle(gl);
@@ -258,7 +258,7 @@ export default function Galaxy({
           value: new Color(
             gl.canvas.width,
             gl.canvas.height,
-            gl.canvas.width / gl.canvas.height
+            gl.canvas.width / gl.canvas.height,
           ),
         },
         uFocal: { value: new Float32Array(focal) },
@@ -285,14 +285,14 @@ export default function Galaxy({
       },
     });
 
-    const mesh = new Mesh(gl, { geometry, program });
+    const mesh = new Mesh(gl, { geometry, program: program! });
     let animateId: number;
 
     function update(t: number) {
       animateId = requestAnimationFrame(update);
       if (!disableAnimation) {
-        program.uniforms.uTime.value = t * 0.001;
-        program.uniforms.uStarSpeed.value = (t * 0.001 * starSpeed) / 10.0;
+        program!.uniforms.uTime.value = t * 0.001;
+        program!.uniforms.uStarSpeed.value = (t * 0.001 * starSpeed) / 10.0;
       }
 
       const lerpFactor = 0.05;
@@ -304,9 +304,9 @@ export default function Galaxy({
       smoothMouseActive.current +=
         (targetMouseActive.current - smoothMouseActive.current) * lerpFactor;
 
-      program.uniforms.uMouse.value[0] = smoothMousePos.current.x;
-      program.uniforms.uMouse.value[1] = smoothMousePos.current.y;
-      program.uniforms.uMouseActiveFactor.value = smoothMouseActive.current;
+      program!.uniforms.uMouse.value[0] = smoothMousePos.current.x;
+      program!.uniforms.uMouse.value[1] = smoothMousePos.current.y;
+      program!.uniforms.uMouseActiveFactor.value = smoothMouseActive.current;
 
       renderer.render({ scene: mesh });
     }
@@ -326,19 +326,19 @@ export default function Galaxy({
     }
 
     if (mouseInteraction) {
-      ctn.addEventListener("mousemove", handleMouseMove);
-      ctn.addEventListener("mouseleave", handleMouseLeave);
+      ctn.addEventListener('mousemove', handleMouseMove);
+      ctn.addEventListener('mouseleave', handleMouseLeave);
     }
 
     return () => {
       cancelAnimationFrame(animateId);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener('resize', resize);
       if (mouseInteraction) {
-        ctn.removeEventListener("mousemove", handleMouseMove);
-        ctn.removeEventListener("mouseleave", handleMouseLeave);
+        ctn.removeEventListener('mousemove', handleMouseMove);
+        ctn.removeEventListener('mouseleave', handleMouseLeave);
       }
       ctn.removeChild(gl.canvas);
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
   }, [
     focal,
@@ -359,5 +359,5 @@ export default function Galaxy({
     transparent,
   ]);
 
-  return <div ref={ctnDom} className="w-full h-full relative" {...rest} />;
+  return <div ref={ctnDom} className="w-full h-full absolute" {...rest} />;
 }

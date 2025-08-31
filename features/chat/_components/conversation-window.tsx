@@ -53,7 +53,11 @@ export function ConversationWindow({
                   switch (part.type) {
                     case 'tool-webSearch':
                       return (
-                        <WebSearchResults className='mb-4' key={`${message.id}-${i}`} part={part as any} />
+                        <WebSearchResults
+                          className="mb-4"
+                          key={`${message.id}-${i}`}
+                          part={part as any}
+                        />
                       );
                     case 'text':
                       return (

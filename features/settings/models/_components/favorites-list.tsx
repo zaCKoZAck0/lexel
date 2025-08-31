@@ -14,11 +14,18 @@ import {
   DragOverlay,
   type DragEndEvent,
   type DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
 } from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import {
+  restrictToVerticalAxis,
+  restrictToParentElement,
+} from '@dnd-kit/modifiers';
 import { SortableFavoriteItem } from './sortable-favorite-item';
 
 interface FavoritesListProps {
@@ -36,6 +43,17 @@ export function FavoritesList({
   onDragEnd,
   onRemove,
 }: FavoritesListProps) {
+  // Configure sensors with proper activation constraints
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 10, // Require 10px movement before starting drag
+        tolerance: 5,
+        delay: 100,
+      },
+    }),
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -56,9 +74,12 @@ export function FavoritesList({
           </div>
         ) : (
           <DndContext
+            sensors={sensors}
             collisionDetection={closestCenter}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
+            // Apply modifiers to restrict movement
+            modifiers={[restrictToVerticalAxis]}
           >
             <SortableContext
               items={favoriteModels.map(m => m.id)}
@@ -75,7 +96,18 @@ export function FavoritesList({
               </div>
             </SortableContext>
 
-            <DragOverlay>
+            <DragOverlay
+              // Critical: Disable scale adjustment and use proper modifiers
+              adjustScale={false}
+              modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+              style={{
+                transformOrigin: '0 0',
+              }}
+              dropAnimation={{
+                duration: 200,
+                easing: 'ease',
+              }}
+            >
               {activeId ? (
                 <SortableFavoriteItem
                   model={

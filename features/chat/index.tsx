@@ -30,7 +30,7 @@ export function Chat({
   const [files, setFiles] = useState<FileList | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [modelInfo, setModelInfo] = useState({
-    modelId: favoriteModels[0].id,
+    modelId: favoriteModels[0]?.id,
     reasoningEffort: 'medium' as 'low' | 'medium' | 'high',
     thinkingEnabled: false,
     webSearchEnabled: false,
@@ -70,14 +70,17 @@ export function Chat({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (input.trim()) {
-      sendMessage({ text: input, files }, {
-        body: {
-          modelInfo: modelInfo,
-          userInfo: {
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      sendMessage(
+        { text: input, files },
+        {
+          body: {
+            modelInfo: modelInfo,
+            userInfo: {
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            },
           },
         },
-      });
+      );
       setInput('');
       setFiles(undefined);
 
