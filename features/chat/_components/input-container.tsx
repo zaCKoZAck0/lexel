@@ -171,6 +171,7 @@ export function InputContainer({
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <Button
+                    type="button"
                     variant="outline"
                     role="combobox"
                     size="sm"
@@ -212,6 +213,7 @@ export function InputContainer({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
+                            type="button"
                             variant="outline"
                             size="icon"
                             className="shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground"
@@ -274,6 +276,7 @@ export function InputContainer({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
+                  type="button"
                   size="sm"
                   variant={modelInfo.webSearchEnabled ? 'default' : 'outline'}
                   onClick={() =>
@@ -308,6 +311,7 @@ export function InputContainer({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
+                      type="button"
                       size="sm"
                       variant={
                         modelInfo.thinkingEnabled ? 'default' : 'outline'
@@ -375,7 +379,12 @@ export function InputContainer({
             </PromptInputSubmit>
           )}
           {status === 'streaming' && (
-            <Button onClick={() => stop()} size="icon" className="rounded-full">
+            <Button
+              type="button"
+              onClick={() => stop()}
+              size="icon"
+              className="rounded-full"
+            >
               <SquareIcon className="w-4 h-4 animate-pulse fill-primary-foreground" />
             </Button>
           )}

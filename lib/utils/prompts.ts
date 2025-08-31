@@ -61,9 +61,8 @@ Your role is to provide **helpful, respectful, and engaging** responses tailored
 
 const WebSearchPrompt = `
 ### Web Search
+- **Always** use web search to supplement your knowledge and provide accurate information.
 - **Be Specific and Use Keywords:** Clearly define the main topic or question using precise and relevant keywords. Avoid filler words and focus on the core information you want to find.
-- **Use Quotation Marks for Exact Phrases:** If searching for a specific phrase or term, enclose it in quotation marks to ensure Google finds exact matches.
-- **Include Relevant Filters or Operators:** Add search operators like site:, or exclusion terms (-word) to narrow down results and target trustworthy or specific sources.
 ---
 `;
 
