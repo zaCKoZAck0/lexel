@@ -1,7 +1,7 @@
 import { generateText } from 'ai';
 import { AIMessage } from '../types/ai-message';
 import { getRegistryModel } from '../models/model-registry';
-import { CHAT_TITLE_GEN_MODEL_DETAILS } from '../config/config';
+import { CHAT_TITLE_GEN_MODEL_DETAILS } from '../config/server';
 
 export async function generateTitleForChat({
   message,

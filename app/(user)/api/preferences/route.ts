@@ -5,12 +5,13 @@ import { userPreferencesUpdateSchema } from './schema';
 import { headers } from 'next/headers';
 import { limiter } from '@/lib/api/server/rate-limit';
 import * as userPrefService from '@/lib/api/server/services/user-preferences';
-import type { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
 
 // GET /api/preferences - returns current user's preferences
 export async function GET() {
   try {
     const session = await auth();
+    console.log(session);
     if (!session?.user?.id) return fail('Unauthorized', 401);
 
     const prefs = await userPrefService.getByUserId(session.user.id);

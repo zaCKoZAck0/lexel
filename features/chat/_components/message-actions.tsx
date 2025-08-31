@@ -73,7 +73,7 @@ function AssistantActions({
   };
 
   return (
-    <Actions className="mt-2 flex items-center w-full gap-1">
+    <Actions className="mt-2 mb-4 flex items-center w-full gap-1">
       <div className="flex items-center">
         {message.role === 'assistant' && <MessageMetadata message={message} />}
         <Tooltip>

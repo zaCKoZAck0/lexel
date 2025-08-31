@@ -1,5 +1,6 @@
 import { permanentRedirect } from 'next/navigation';
+import { URLS } from '@/lib/config/config';
 
 export default function HomePage() {
-  return permanentRedirect('/chat');
+  return permanentRedirect(URLS.defaultRedirect);
 }
