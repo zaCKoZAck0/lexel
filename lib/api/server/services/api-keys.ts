@@ -1,4 +1,4 @@
-import { MAX_API_KEYS_PER_PROVIDER } from '@/lib/config/config';
+import { MAX_API_KEYS_PER_PROVIDER } from '@/lib/config/server';
 import { prisma } from '@/prisma';
 import { AppError } from '@/lib/api/server/errors';
 import { encrypt, decrypt } from '@/lib/security/encryption';

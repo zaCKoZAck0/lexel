@@ -78,8 +78,6 @@ export async function POST(req: Request) {
       return fail('Unauthorized - Please log in to continue', 401);
     }
 
-    // get provider api key
-
     if (chat && chat.userId !== session.user.id) {
       return fail('Chat not found', 404);
     }
@@ -109,8 +107,8 @@ export async function POST(req: Request) {
         {
           chatId: id,
           role: 'user',
-          parts: message.parts as JsonValue,
-          metadata: message.metadata as JsonValue,
+          parts: [] as JsonValue,
+          metadata: [] as JsonValue,
           id: message.id,
           modelId: 'N/A',
           attachmentUrls: [],

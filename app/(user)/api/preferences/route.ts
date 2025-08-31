@@ -5,7 +5,7 @@ import { userPreferencesUpdateSchema } from './schema';
 import { headers } from 'next/headers';
 import { limiter } from '@/lib/api/server/rate-limit';
 import * as userPrefService from '@/lib/api/server/services/user-preferences';
-import type { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
 
 // GET /api/preferences - returns current user's preferences
 export async function GET() {
