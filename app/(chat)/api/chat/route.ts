@@ -20,15 +20,15 @@ import { getSystemPrompt } from '@/lib/utils/prompts';
 import { getProviderOptions } from '@/lib/models/provider-options';
 import {
   createChat,
-  getChatById,
-  getMessagesByChatId,
+  getChatByIdWithMessages,
   saveMessages,
 } from '@/lib/api/server/services/chat';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { convertToUIMessages } from '@/lib/utils/utils';
 import { webSearch } from '@/lib/tools/exa-web-search';
+import { generateTitleForChat } from '@/lib/ai/generate-title-for-chat';
 
-// Allow streaming responses up to 30 seconds
+// Allow streaming responses up to 60 seconds
 export const maxDuration = 60;
 
 interface RequestBody {
@@ -55,16 +55,8 @@ export async function POST(req: Request) {
       return fail('Rate limit exceeded. Please try again later.', 429);
     }
 
-    // Authentication - only logged-in users can access chat
-    const session = await auth();
-    if (!session?.user?.id) {
-      return fail('Unauthorized - Please log in to continue', 401);
-    }
-
     // Validate request body
     const json = await req.json();
-
-    console.log(json);
 
     const { id, userInfo, message, modelInfo } = json as RequestBody;
 
@@ -74,19 +66,34 @@ export async function POST(req: Request) {
       return fail(`Unsupported model: ${modelInfo.modelId}`, 400);
     }
 
-    // get provider api key
     const provider = model.provider;
 
-    let chat = await getChatById(id);
+    const [session, chat] = await Promise.all([
+      auth(),
+      getChatByIdWithMessages(id),
+    ]);
+
+    // Authentication - only logged-in users can access chat
+    if (!session?.user?.id) {
+      return fail('Unauthorized - Please log in to continue', 401);
+    }
+
+    // get provider api key
+
+    if (chat && chat.userId !== session.user.id) {
+      return fail('Chat not found', 404);
+    }
+
+    let chatWithMessages = chat;
+
     if (!chat) {
-      // create chat
-      // TODO: get title from query
+      const title = await generateTitleForChat({ message });
       const newChat = await createChat({
         userId: session.user.id,
         chatId: id,
-        title: 'New Chat',
+        title,
       });
-      chat = newChat;
+      chatWithMessages = { ...newChat, messages: [] };
     }
 
     const providerApiKey = await getDefaultApiKeyForProvider({
@@ -112,8 +119,10 @@ export async function POST(req: Request) {
       ],
     });
 
-    const dbMessages = await getMessagesByChatId(id);
-    const uiMessages = [...convertToUIMessages(dbMessages), message];
+    const uiMessages = [
+      ...convertToUIMessages(chatWithMessages?.messages ?? []),
+      message,
+    ];
 
     let reasoningStartTimeMs: number | undefined;
     let reasoningEndTimeMs: number | undefined;
@@ -127,11 +136,9 @@ export async function POST(req: Request) {
             providerApiKey: providerApiKey.key,
           }),
           tools: {
-            ...(modelInfo.webSearchEnabled
-              ? {
-                  webSearch,
-                }
-              : {}),
+            ...(modelInfo.webSearchEnabled && {
+              webSearch,
+            }),
           },
           stopWhen: stepCountIs(5),
           experimental_transform: smoothStream({ chunking: 'word' }),
