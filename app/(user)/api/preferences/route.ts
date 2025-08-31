@@ -11,7 +11,6 @@ import { NextRequest } from 'next/server';
 export async function GET() {
   try {
     const session = await auth();
-    console.log(session);
     if (!session?.user?.id) return fail('Unauthorized', 401);
 
     const prefs = await userPrefService.getByUserId(session.user.id);
