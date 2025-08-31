@@ -4,13 +4,13 @@ import { limiter } from '@/lib/api/server/rate-limit';
 import { ok, fail } from '@/lib/api/server/api-response';
 import { isAppError } from '@/lib/api/server/errors';
 import * as chatService from '@/lib/api/server/services/chat';
-import type { NextRequest } from 'next/server';
+// Use the standard Web Request type for route handlers
 
 interface RouteParams {
   params: { id: string };
 }
 
-export async function DELETE(req: NextRequest, { params }: RouteParams) {
+export async function DELETE(req: Request, { params }: RouteParams) {
   try {
     // Rate-limit (IP-based)
     const ip = (await headers()).get('x-forwarded-for') ?? 'unknown';
