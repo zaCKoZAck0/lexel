@@ -17,7 +17,10 @@ export function useCreateApiKeyMutation() {
     ApiRequestError,
     CreateApiKeyInput
   >({
-    mutationFn: (data: CreateApiKeyInput) => apiKeysService.create(data),
+    mutationFn: (data: CreateApiKeyInput) =>
+      apiKeysService
+        .create(data)
+        .then(r => ({ key: r.data, plainApiKey: r.data.key })),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: apiKeyQueryKeys.all });
       toast.success('API key created successfully');
@@ -51,8 +54,13 @@ export function useUpdateApiKeyMutation() {
 export function useDeleteApiKeyMutation() {
   const queryClient = useQueryClient();
 
-  return useMutation<void, ApiRequestError, string>({
-    mutationFn: (id: string) => apiKeysService.delete(id),
+  return useMutation<
+    void,
+    ApiRequestError,
+    string,
+    { previousKeys?: ApiKey[] }
+  >({
+    mutationFn: (id: string) => apiKeysService.delete(id).then(() => undefined),
     onMutate: async id => {
       await queryClient.cancelQueries({ queryKey: apiKeyQueryKeys.all });
 
@@ -85,8 +93,15 @@ export function useDeleteApiKeyMutation() {
 export function useSetDefaultApiKeyMutation() {
   const queryClient = useQueryClient();
 
-  return useMutation<ApiKey, ApiRequestError, string>({
-    mutationFn: (id: string) => apiKeysService.setDefault(id).then(r => r.data),
+  return useMutation<
+    ApiKey,
+    ApiRequestError,
+    string,
+    { previousKeys?: ApiKey[] }
+  >({
+    // setDefault endpoint returns ApiResponse<{ message }>, so map to void
+    mutationFn: (id: string) =>
+      apiKeysService.setDefault(id).then(() => undefined as unknown as ApiKey),
     onMutate: async id => {
       await queryClient.cancelQueries({ queryKey: apiKeyQueryKeys.all });
 
@@ -99,7 +114,7 @@ export function useSetDefaultApiKeyMutation() {
         old =>
           old?.map(key => ({
             ...key,
-            isDefault: key.id === id,
+            default: key.id === id,
           })) ?? [],
       );
 

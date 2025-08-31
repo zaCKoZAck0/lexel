@@ -8,7 +8,7 @@ import type { NextRequest } from 'next/server';
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Rate-limit (IP-based)
@@ -20,7 +20,8 @@ export async function DELETE(
     const session = await auth();
     if (!session?.user?.id) return fail('Unauthorized', 401);
 
-    const { id: chatId } = params;
+    // Await params since it's now a Promise
+    const { id: chatId } = await params;
 
     if (!chatId) {
       return fail('Chat ID is required', 400);
