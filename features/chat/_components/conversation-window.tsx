@@ -42,7 +42,7 @@ export function ConversationWindow({
   return (
     <Conversation>
       <ConversationContent className="h-full">
-        {messages.map((message, messageIndex) => (
+        {messages.map((message) => (
           <Message from={message.role} key={message.id}>
             <div className="flex flex-row-reverse gap-2">
               {message.role === 'user' && (

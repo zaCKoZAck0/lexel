@@ -107,8 +107,8 @@ export async function POST(req: Request) {
         {
           chatId: id,
           role: 'user',
-          parts: [] as JsonValue,
-          metadata: [] as JsonValue,
+          parts: message.parts as JsonValue,
+          metadata: message.metadata as JsonValue,
           id: message.id,
           modelId: 'N/A',
           attachmentUrls: [],

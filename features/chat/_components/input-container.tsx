@@ -46,6 +46,7 @@ import {
   ListIcon,
   ChevronDownIcon,
   GlobeIcon,
+  LightbulbIcon,
 } from 'lucide-react';
 import type { ChatStatus } from 'ai';
 import Link from 'next/link';
@@ -107,7 +108,7 @@ export function InputContainer({
 
   return (
     <motion.div
-      className={`fixed p-2 px-4 max-w-2xl w-full left-1/2 transform -translate-x-1/2 ${className}`}
+      className={`fixed md:p-2 md:px-4 max-w-2xl w-full left-1/2 transform -translate-x-1/2 ${className}`}
       initial={hasMessages ? 'bottom' : 'center'}
       animate={hasMessages ? 'bottom' : 'center'}
       variants={{
@@ -174,7 +175,7 @@ export function InputContainer({
                     type="button"
                     variant="outline"
                     role="combobox"
-                    size="sm"
+                    size="xs"
                     aria-expanded={open}
                     className="justify-between min-w-[100px] rounded-full"
                   >
@@ -277,7 +278,7 @@ export function InputContainer({
               <TooltipTrigger asChild>
                 <Button
                   type="button"
-                  size="sm"
+                  size="xs"
                   variant={modelInfo.webSearchEnabled ? 'default' : 'outline'}
                   onClick={() =>
                     setModelInfo(prev => ({
@@ -288,7 +289,7 @@ export function InputContainer({
                   className="rounded-full"
                 >
                   <GlobeIcon className="w-4 h-4" />
-                  Search
+                  <span className='hidden md:inline-block'>Search</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -312,7 +313,7 @@ export function InputContainer({
                   <TooltipTrigger asChild>
                     <Button
                       type="button"
-                      size="sm"
+                      size="xs"
                       variant={
                         modelInfo.thinkingEnabled ? 'default' : 'outline'
                       }
@@ -324,8 +325,8 @@ export function InputContainer({
                       }
                       className="rounded-full"
                     >
-                      <BrainIcon className="w-4 h-4" />
-                      Thinking
+                      <LightbulbIcon className="w-4 h-4" />
+                      <span className='hidden sm:inline-block'>Thinking</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -349,22 +350,50 @@ export function InputContainer({
               if (!supportsEffortControl || hasHybridReasoning) return null;
 
               return (
-                <Select
-                  value={modelInfo.reasoningEffort || 'medium'}
-                  onValueChange={(value: 'low' | 'medium' | 'high') =>
-                    setModelInfo(prev => ({ ...prev, reasoningEffort: value }))
-                  }
-                >
-                  <SelectTrigger className="rounded-full capitalize">
-                    <BrainIcon className="w-4 h-4" />
-                    {modelInfo.reasoningEffort}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      size="xs"
+                      variant="outline"
+                      className="justify-between rounded-full capitalize"
+                    >
+                      <div className="flex items-center gap-1">
+                        <BrainIcon className="w-4 h-4" />
+                        <span className="truncate">{modelInfo.reasoningEffort}</span>
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="p-0 w-[160px]">
+                    <Command>
+                      <CommandList>
+                        <CommandGroup>
+                          {(['low', 'medium', 'high'] as const).map(val => (
+                            <CommandItem
+                              key={val}
+                              value={val}
+                              onSelect={() =>
+                                setModelInfo(prev => ({ ...prev, reasoningEffort: val }))
+                              }
+                            >
+                              <div
+                                className={cn(
+                                  'flex items-center gap-2 w-full',
+                                  modelInfo.reasoningEffort === val
+                                    ? 'text-primary'
+                                    : 'text-foreground'
+                                )}
+                              >
+                                <BrainIcon className="w-4 h-4" />
+                                <span className="capitalize">{val}</span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               );
             })()}
           </PromptInputTools>

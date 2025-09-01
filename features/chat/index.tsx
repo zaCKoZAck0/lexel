@@ -7,7 +7,6 @@ import React from 'react';
 import { Model } from '@/lib/models';
 import { AIMessage } from '@/lib/types/ai-message';
 import { ConversationWindow } from './_components/conversation-window';
-import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
 import { InputContainer } from '@/features/chat/_components/input-container';
 import { toast } from 'sonner';
@@ -91,7 +90,7 @@ export function Chat({
   };
 
   return (
-    <div className="max-w-4xl mx-auto relative min-h-screen">
+    <div className="max-w-4xl w-screen pt-8 relative min-h-screen">
       <div className="flex flex-col h-full">
         <div className="w-full flex-1">
           <ConversationWindow
