@@ -7,12 +7,7 @@ import ReactMarkdown, { type Options } from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
-import {
-  CodeBlock,
-  CodeBlockCopyButton,
-  CodeBlockWrapButton,
-  CodeBlockDownloadButton,
-} from './code-block';
+import { CodeBlock } from './code-block';
 import 'katex/dist/katex.min.css';
 import hardenReactMarkdown from 'harden-react-markdown';
 
@@ -321,10 +316,40 @@ const components: Options['components'] = {
     );
   },
   pre: ({ node, className, children }) => {
-    let language = 'javascript';
+    let language = 'plaintext';
 
-    if (typeof node?.properties?.className === 'string') {
-      language = node.properties.className.replace('language-', '');
+    // More robust language detection
+    if (node?.properties?.className) {
+      const rawClassNames = Array.isArray(node.properties.className)
+        ? node.properties.className
+        : [node.properties.className];
+      const classNames = rawClassNames.filter(
+        (cls): cls is string => typeof cls === 'string',
+      );
+
+      // Find the language class
+      const langClass = classNames.find(cls => cls.startsWith('language-'));
+
+      if (langClass) {
+        language = langClass.replace('language-', '');
+      }
+    }
+
+    // Fallback: try to detect from the children's className
+    if (
+      language === 'plaintext' &&
+      isValidElement(children) &&
+      children.props
+    ) {
+      const childClassName = (
+        children.props as React.HtmlHTMLAttributes<HTMLElement>
+      ).className;
+      if (
+        typeof childClassName === 'string' &&
+        childClassName.startsWith('language-')
+      ) {
+        language = childClassName.replace('language-', '');
+      }
     }
 
     // Extract code content from children safely
@@ -344,11 +369,7 @@ const components: Options['components'] = {
         code={code}
         language={language}
         className={cn('my-4 h-auto', className)}
-      >
-        <CodeBlockWrapButton />
-        <CodeBlockDownloadButton />
-        <CodeBlockCopyButton />
-      </CodeBlock>
+      />
     );
   },
 };

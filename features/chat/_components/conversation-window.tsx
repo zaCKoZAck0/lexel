@@ -22,7 +22,13 @@ import { ChatRequestOptions } from 'ai';
 import { ShinyText } from '@/components/ui/shiny-text';
 import { getRandomSubmittedMessage } from '@/lib/utils/ui-text';
 import { Button } from '@/components/ui/button';
-import WebSearchResults from './web-search-results';
+import WebSearchResults, { WebSearchPart } from './web-search-results';
+import {
+  SearchMemoryUI,
+  AddMemoryUI,
+  SearchMemoryPart,
+  AddMemoryPart,
+} from '@/components/ai-elements/tools/supermemory-ui';
 
 export function ConversationWindow({
   messages,
@@ -31,6 +37,7 @@ export function ConversationWindow({
   userInitials,
   selectedModelId,
   chatId,
+  rewrite,
 }: {
   messages: AIMessage[];
   status: string;
@@ -38,11 +45,12 @@ export function ConversationWindow({
   userInitials: string;
   selectedModelId: string;
   chatId: string;
+  rewrite: (messageId: string) => void;
 }) {
   return (
     <Conversation>
       <ConversationContent className="h-full">
-        {messages.map((message) => (
+        {messages.map(message => (
           <Message from={message.role} key={message.id}>
             <div className="flex flex-row-reverse gap-2">
               {message.role === 'user' && (
@@ -56,7 +64,23 @@ export function ConversationWindow({
                         <WebSearchResults
                           className="mb-4"
                           key={`${message.id}-${i}`}
-                          part={part as any}
+                          part={part as WebSearchPart}
+                        />
+                      );
+                    case 'tool-searchMemories':
+                      return (
+                        <SearchMemoryUI
+                          className="mb-4"
+                          key={`${message.id}-${i}`}
+                          part={part as SearchMemoryPart}
+                        />
+                      );
+                    case 'tool-addMemory':
+                      return (
+                        <AddMemoryUI
+                          className="mb-4"
+                          key={`${message.id}-${i}`}
+                          part={part as AddMemoryPart}
                         />
                       );
                     case 'text':
@@ -69,6 +93,7 @@ export function ConversationWindow({
                             chatId={chatId}
                             selectedModelId={selectedModelId}
                             messages={messages}
+                            rewrite={rewrite}
                           />
                         </div>
                       );

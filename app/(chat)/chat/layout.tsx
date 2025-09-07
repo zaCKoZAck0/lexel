@@ -8,7 +8,9 @@ export default function ChatLayout({
   return (
     <div className="h-screen w-full">
       <Nav>
-        <div className="flex-1 overflow-hidden flex flex-col items-center">{children}</div>
+        <div className="flex-1 overflow-hidden flex flex-col items-center">
+          {children}
+        </div>
       </Nav>
     </div>
   );

@@ -47,4 +47,8 @@ export function getModelDetails(modelId: string) {
   return allModels.find(model => model.id === modelId);
 }
 
+export function allModelsForProviders(providers: ProviderId[]) {
+  return allModels.filter(model => providers.includes(model.provider));
+}
+
 export { type Model, type Modality, type Features, type ModelType };

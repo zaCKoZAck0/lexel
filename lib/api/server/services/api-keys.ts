@@ -1,3 +1,4 @@
+import 'server-only';
 import { MAX_API_KEYS_PER_PROVIDER } from '@/lib/config/server';
 import { prisma } from '@/prisma';
 import { AppError } from '@/lib/api/server/errors';

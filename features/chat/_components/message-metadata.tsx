@@ -1,6 +1,6 @@
 import { getModelDetails } from '@/lib/models';
 import { AIMessage } from '@/lib/types/ai-message';
-import { ClockIcon, BracketsIcon, ZapIcon } from 'lucide-react';
+import { ClockIcon, BracketsIcon, ZapIcon, RefreshCcwIcon } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -13,7 +13,13 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-export function MessageMetadata({ message }: { message: AIMessage }) {
+export function MessageMetadata({
+  message,
+  rewrite,
+}: {
+  message: AIMessage;
+  rewrite: (messageId: string) => void;
+}) {
   const modelName = getModelDetails(message.metadata?.modelId || '')?.name;
   const totalTokens = message.metadata?.totalTokens;
   const tokensPerSecond =
@@ -31,18 +37,22 @@ export function MessageMetadata({ message }: { message: AIMessage }) {
     1000;
 
   return (
-    <div className="flex gap-1 items-center">
+    <div className="flex gap-2 items-center">
       {modelName && (
         <p className="bg-gradient-to-l from-muted-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
           {modelName}
         </p>
       )}
+      <Button variant="outline" size="xs" onClick={() => rewrite(message.id)}>
+        <RefreshCcwIcon className="size-4" />
+        Rewrite
+      </Button>
       {(totalTokens || tokensPerSecond || timeToFirstTokenSeconds) && (
         <Popover>
           <Tooltip>
             <TooltipTrigger asChild>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="xs">
+                <Button variant="outline" size="xs">
                   <ZapIcon className="size-4" />
                 </Button>
               </PopoverTrigger>

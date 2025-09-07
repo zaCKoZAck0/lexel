@@ -108,7 +108,7 @@ export function InputContainer({
 
   return (
     <motion.div
-      className={`fixed md:p-2 md:px-4 max-w-2xl w-full left-1/2 transform -translate-x-1/2 ${className}`}
+      className={`fixed md:p-2 md:px-4 max-w-3xl w-full left-1/2 transform -translate-x-1/2 ${className}`}
       initial={hasMessages ? 'bottom' : 'center'}
       animate={hasMessages ? 'bottom' : 'center'}
       variants={{
@@ -289,7 +289,7 @@ export function InputContainer({
                   className="rounded-full"
                 >
                   <GlobeIcon className="w-4 h-4" />
-                  <span className='hidden md:inline-block'>Search</span>
+                  <span className="hidden md:inline-block">Search</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -326,7 +326,7 @@ export function InputContainer({
                       className="rounded-full"
                     >
                       <LightbulbIcon className="w-4 h-4" />
-                      <span className='hidden sm:inline-block'>Thinking</span>
+                      <span className="hidden sm:inline-block">Thinking</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -360,7 +360,9 @@ export function InputContainer({
                     >
                       <div className="flex items-center gap-1">
                         <BrainIcon className="w-4 h-4" />
-                        <span className="truncate">{modelInfo.reasoningEffort}</span>
+                        <span className="truncate">
+                          {modelInfo.reasoningEffort}
+                        </span>
                       </div>
                     </Button>
                   </PopoverTrigger>
@@ -373,7 +375,10 @@ export function InputContainer({
                               key={val}
                               value={val}
                               onSelect={() =>
-                                setModelInfo(prev => ({ ...prev, reasoningEffort: val }))
+                                setModelInfo(prev => ({
+                                  ...prev,
+                                  reasoningEffort: val,
+                                }))
                               }
                             >
                               <div
@@ -381,7 +386,7 @@ export function InputContainer({
                                   'flex items-center gap-2 w-full',
                                   modelInfo.reasoningEffort === val
                                     ? 'text-primary'
-                                    : 'text-foreground'
+                                    : 'text-foreground',
                                 )}
                               >
                                 <BrainIcon className="w-4 h-4" />

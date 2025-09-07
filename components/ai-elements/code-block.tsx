@@ -2,13 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { cn } from '@/lib/utils/utils';
 import {
   CheckIcon,
@@ -27,12 +20,6 @@ import {
 } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { nord, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-
-type SupportedLanguage = {
-  value: string;
-  label: string;
-  extension: string;
-};
 
 type CodeBlockContextType = {
   code: string;
@@ -55,13 +42,9 @@ export type CodeBlockProps = HTMLAttributes<HTMLDivElement> & {
   language: string;
   showLineNumbers?: boolean;
   children?: ReactNode;
-  allowLanguageChange?: boolean;
 };
 
-// Constants for styling and configuration
-const FLOATING_HEADER_STYLES = 'absolute top-0 left-0 z-10';
-const FLOATING_ACTIONS_STYLES =
-  'absolute top-2 right-2 z-10 flex items-center gap-1';
+const FLOATING_HEADER_STYLES = 'sticky top-0 left-0 z-20';
 const BACKDROP_STYLES = 'bg-muted/80 backdrop-blur-sm';
 const BUTTON_STYLES = `${BACKDROP_STYLES} hover:bg-muted border-0 text-muted-foreground hover:text-foreground`;
 
@@ -79,38 +62,50 @@ const SYNTAX_HIGHLIGHTER_COMMON_PROPS = {
   padding: '3rem 1rem 1rem 1rem', // Extra top padding for floating header
 };
 
-// Common programming languages for the select dropdown with file extensions
-const SUPPORTED_LANGUAGES: SupportedLanguage[] = [
-  { value: 'javascript', label: 'JavaScript', extension: 'js' },
-  { value: 'typescript', label: 'TypeScript', extension: 'ts' },
-  { value: 'python', label: 'Python', extension: 'py' },
-  { value: 'java', label: 'Java', extension: 'java' },
-  { value: 'cpp', label: 'C++', extension: 'cpp' },
-  { value: 'c', label: 'C', extension: 'c' },
-  { value: 'csharp', label: 'C#', extension: 'cs' },
-  { value: 'php', label: 'PHP', extension: 'php' },
-  { value: 'ruby', label: 'Ruby', extension: 'rb' },
-  { value: 'go', label: 'Go', extension: 'go' },
-  { value: 'rust', label: 'Rust', extension: 'rs' },
-  { value: 'html', label: 'HTML', extension: 'html' },
-  { value: 'css', label: 'CSS', extension: 'css' },
-  { value: 'scss', label: 'SCSS', extension: 'scss' },
-  { value: 'json', label: 'JSON', extension: 'json' },
-  { value: 'xml', label: 'XML', extension: 'xml' },
-  { value: 'yaml', label: 'YAML', extension: 'yml' },
-  { value: 'markdown', label: 'Markdown', extension: 'md' },
-  { value: 'bash', label: 'Bash', extension: 'sh' },
-  { value: 'sql', label: 'SQL', extension: 'sql' },
-  { value: 'dockerfile', label: 'Dockerfile', extension: 'dockerfile' },
-  { value: 'nginx', label: 'Nginx', extension: 'conf' },
-  { value: 'apache', label: 'Apache', extension: 'conf' },
-  { value: 'plaintext', label: 'Plain Text', extension: 'txt' },
-];
+// Map language slugs to file extensions (no labels)
+const LANGUAGE_TO_EXTENSION: Record<string, string> = {
+  javascript: 'js',
+  js: 'js',
+  typescript: 'ts',
+  ts: 'ts',
+  tsx: 'tsx',
+  jsx: 'jsx',
+  python: 'py',
+  py: 'py',
+  java: 'java',
+  cpp: 'cpp',
+  c: 'c',
+  csharp: 'cs',
+  cs: 'cs',
+  php: 'php',
+  ruby: 'rb',
+  rb: 'rb',
+  go: 'go',
+  rust: 'rs',
+  rs: 'rs',
+  html: 'html',
+  css: 'css',
+  scss: 'scss',
+  json: 'json',
+  xml: 'xml',
+  yaml: 'yml',
+  yml: 'yml',
+  markdown: 'md',
+  md: 'md',
+  bash: 'sh',
+  sh: 'sh',
+  sql: 'sql',
+  dockerfile: 'dockerfile',
+  nginx: 'conf',
+  apache: 'conf',
+  plaintext: 'txt',
+  text: 'txt',
+  txt: 'txt',
+};
 
-// Utility function to get file extension for a language
 const getFileExtension = (lang: string): string => {
-  const language = SUPPORTED_LANGUAGES.find(l => l.value === lang);
-  return language?.extension || 'txt';
+  const key = typeof lang === 'string' ? lang.toLowerCase() : '';
+  return LANGUAGE_TO_EXTENSION[key] || 'txt';
 };
 
 export const CodeBlock = ({
@@ -118,8 +113,6 @@ export const CodeBlock = ({
   language: initialLanguage,
   showLineNumbers = false,
   className,
-  children,
-  allowLanguageChange = false,
   ...props
 }: CodeBlockProps) => {
   const [language, setLanguage] = useState(initialLanguage);
@@ -136,14 +129,6 @@ export const CodeBlock = ({
     [code, language, isWrapped],
   );
 
-  const displayLanguage = useMemo(
-    () =>
-      SUPPORTED_LANGUAGES.find(
-        lang => lang.value === language,
-      )?.label.toLowerCase() || language,
-    [language],
-  );
-
   return (
     <CodeBlockContext.Provider value={contextValue}>
       <div
@@ -154,37 +139,25 @@ export const CodeBlock = ({
         {...props}
       >
         {/* Floating header elements */}
-        <div className={FLOATING_HEADER_STYLES}>
-          {allowLanguageChange ? (
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger
-                className={`h-6 w-auto min-w-[80px] border-0 ${BACKDROP_STYLES} text-xs font-medium text-muted-foreground px-2 py-1 rounded`}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SUPPORTED_LANGUAGES.map(lang => (
-                  <SelectItem key={lang.value} value={lang.value}>
-                    {lang.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <div
-              className={`inline-flex items-center h-6 px-2 py-1 ${BACKDROP_STYLES} text-sm font-medium text-muted-foreground rounded-tr-0 rounded-bl-0`}
-            >
-              {displayLanguage}
-            </div>
-          )}
+        <div
+          className={`${FLOATING_HEADER_STYLES} flex justify-between items-center w-full p-2`}
+        >
+          <div
+            className={`inline-flex items-center h-6 px-2 py-1 ${BACKDROP_STYLES} text-sm font-medium text-muted-foreground rounded-tr-0 rounded-bl-0`}
+          >
+            {language}
+          </div>
+          <div className="flex items-center gap-1">
+            <CodeBlockWrapButton />
+            <CodeBlockDownloadButton />
+            <CodeBlockCopyButton />
+          </div>
         </div>
-
-        {children && <div className={FLOATING_ACTIONS_STYLES}>{children}</div>}
 
         <div className="relative">
           <ScrollArea className="w-full">
-            <div className={cn(!isWrapped && 'w-max min-w-full')}>
-              {/* Syntax Highlighter Components */}
+            <div className="w-full">
+              {/* Light theme syntax highlighter */}
               <SyntaxHighlighter
                 {...SYNTAX_HIGHLIGHTER_COMMON_PROPS}
                 className="overflow-hidden dark:hidden"
@@ -193,16 +166,29 @@ export const CodeBlock = ({
                   background: 'hsl(var(--background))',
                   color: 'hsl(var(--foreground))',
                   whiteSpace: isWrapped ? 'pre-wrap' : 'pre',
+                  wordBreak: isWrapped ? 'break-all' : 'normal',
                 }}
                 language={language}
                 showLineNumbers={showLineNumbers}
                 style={oneLight}
                 wrapLines={isWrapped}
                 wrapLongLines={isWrapped}
+                lineProps={
+                  isWrapped
+                    ? {
+                        style: {
+                          wordBreak: 'break-all',
+                          whiteSpace: 'pre-wrap',
+                          width: '100%',
+                        },
+                      }
+                    : undefined
+                }
               >
                 {code}
               </SyntaxHighlighter>
 
+              {/* Dark theme syntax highlighter */}
               <SyntaxHighlighter
                 {...SYNTAX_HIGHLIGHTER_COMMON_PROPS}
                 className="hidden overflow-hidden dark:block"
@@ -211,17 +197,29 @@ export const CodeBlock = ({
                   background: 'hsl(var(--background))',
                   color: 'hsl(var(--foreground))',
                   whiteSpace: isWrapped ? 'pre-wrap' : 'pre',
+                  wordBreak: isWrapped ? 'break-all' : 'normal',
                 }}
                 language={language}
                 showLineNumbers={showLineNumbers}
                 style={nord}
                 wrapLines={isWrapped}
                 wrapLongLines={isWrapped}
+                lineProps={
+                  isWrapped
+                    ? {
+                        style: {
+                          wordBreak: 'break-all',
+                          whiteSpace: 'pre-wrap',
+                          width: '100%',
+                        },
+                      }
+                    : undefined
+                }
               >
                 {code}
               </SyntaxHighlighter>
             </div>
-            {!isWrapped && <ScrollBar orientation="horizontal" />}
+            <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </div>
       </div>
@@ -304,6 +302,7 @@ export const CodeBlockDownloadButton = ({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
 
+      // Use mapped file extension when available; otherwise the raw language or txt
       const finalFilename = filename || `code.${getFileExtension(language)}`;
       a.href = url;
       a.download = finalFilename;

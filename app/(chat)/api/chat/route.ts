@@ -20,9 +20,11 @@ import { getSystemPrompt } from '@/lib/utils/prompts';
 import { getProviderOptions } from '@/lib/models/provider-options';
 import {
   createChat,
+  deleteMessages,
   getChatByIdWithMessages,
   saveMessages,
 } from '@/lib/api/server/services/chat';
+import { createMemoryTools } from '@/lib/tools/supermemory';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { convertToUIMessages } from '@/lib/utils/utils';
 import { webSearch } from '@/lib/tools/exa-web-search';
@@ -43,6 +45,7 @@ interface RequestBody {
     reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high';
     thinkingEnabled?: boolean;
   };
+  trigger: 'message-send' | 'message-rewrite';
 }
 
 export async function POST(req: Request) {
@@ -58,7 +61,7 @@ export async function POST(req: Request) {
     // Validate request body
     const json = await req.json();
 
-    const { id, userInfo, message, modelInfo } = json as RequestBody;
+    const { id, userInfo, message, modelInfo, trigger } = json as RequestBody;
 
     // Validate model
     const model = getModelDetails(modelInfo.modelId);
@@ -78,7 +81,9 @@ export async function POST(req: Request) {
       return fail('Unauthorized - Please log in to continue', 401);
     }
 
-    if (chat && chat.userId !== session.user.id) {
+    const userId = session.user.id;
+
+    if (chat && chat.userId !== userId) {
       return fail('Chat not found', 404);
     }
 
@@ -102,6 +107,17 @@ export async function POST(req: Request) {
       return fail('Missing provider API key', 401);
     }
 
+    let messageIdsToDelete: string[] = [];
+
+    if (trigger === 'message-rewrite') {
+      const messageIds = chat?.messages.map(message => message.id);
+      const messageIndex = messageIds?.indexOf(message.id);
+      if (!messageIds || messageIndex === -1) {
+        return fail('No messages to rewrite', 400);
+      }
+      messageIdsToDelete = messageIds.slice(messageIndex);
+    }
+
     await saveMessages({
       messages: [
         {
@@ -109,7 +125,7 @@ export async function POST(req: Request) {
           role: 'user',
           parts: message.parts as JsonValue,
           metadata: message.metadata as JsonValue,
-          id: message.id,
+          id: generateId(),
           modelId: 'N/A',
           attachmentUrls: [],
           createdAt: new Date(),
@@ -121,6 +137,8 @@ export async function POST(req: Request) {
       ...convertToUIMessages(chatWithMessages?.messages ?? []),
       message,
     ];
+
+    const memoryTools = createMemoryTools(userId);
 
     let reasoningStartTimeMs: number | undefined;
     let reasoningEndTimeMs: number | undefined;
@@ -137,6 +155,8 @@ export async function POST(req: Request) {
             ...(modelInfo.webSearchEnabled && {
               webSearch,
             }),
+            searchMemories: memoryTools.searchMemories,
+            addMemory: memoryTools.addMemory,
           },
           stopWhen: stepCountIs(5),
           experimental_transform: smoothStream({ chunking: 'word' }),
@@ -182,6 +202,9 @@ export async function POST(req: Request) {
                   createdAt: new Date(),
                 })),
               });
+              if (messageIdsToDelete.length > 0) {
+                await deleteMessages(messageIdsToDelete);
+              }
             },
             generateMessageId: generateId,
             messageMetadata: ({ part }) => {
@@ -193,7 +216,6 @@ export async function POST(req: Request) {
                 };
               }
               if (part.type === 'finish') {
-                console.log(part.totalUsage);
                 return {
                   totalTokens: part.totalUsage.totalTokens,
                   responseEndTimeMs: performance.now(),
