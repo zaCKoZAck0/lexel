@@ -132,20 +132,23 @@ export function SearchMemoryUI({
         </AccordionTrigger>
         <AccordionContent className="px-3 pb-2">
           <div className="space-y-2 py-2">
-            {output.results.filter(result => result.content).slice(0, 5).map(result => (
-              <div
-                key={result.id}
-                className="rounded-md bg-muted border shadow text-muted-foreground py-1 px-2 text-sm"
-              >
-                <div className="space-y-1">
-                  <div className="flex-1">
-                    <p className="text-foreground font-serif font-semibold italic line-clamp-1">
-                      &quot;{result.content}&quot;
-                    </p>
+            {output.results
+              .filter(result => result.content)
+              .slice(0, 5)
+              .map(result => (
+                <div
+                  key={result.id}
+                  className="rounded-md bg-muted border shadow text-muted-foreground py-1 px-2 text-sm"
+                >
+                  <div className="space-y-1">
+                    <div className="flex-1">
+                      <p className="text-foreground font-serif font-semibold italic line-clamp-1">
+                        &quot;{result.content}&quot;
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
             {output.results.length > 5 && (
               <div className="text-sm font-semibold text-muted-foreground text-right">
                 +{output.results.length - 5} more
