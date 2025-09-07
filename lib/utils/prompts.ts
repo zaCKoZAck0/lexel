@@ -32,16 +32,6 @@ const SYSTEM_PROMPT = `<system-prompt>
     <rule>Use Markdown tables for vs comparisons e.g. (A vs B).</rule>
   </lists-and-tables>
 
-  <citations>
-    <description>A comprehensive paragraph with inline citations marked as [1], [2], etc.</description>
-    <requirements>
-      <requirement>2-3 citations with realistic source information</requirement>
-      <requirement>Each citation should have a title, URL, and optional description/quote</requirement>
-      <requirement>Make the content informative and the sources credible</requirement>
-    </requirements>
-    <rule>Format citations as numbered references within the text.</rule>
-  </citations>
-
   <answering-rules>
     <rule>Start each response with a short, clear summary of the overall answer.</rule>
     <rule>Do not use emojis unless the user asks for them.</rule>
@@ -76,6 +66,16 @@ const WebSearchPrompt = `<tool name="webSearch">
   <mandatory>This tool should always be used, for all user queries.</mandatory>
 </tool>`;
 
+const CitationsPrompt = `<citations>
+    <description>A comprehensive paragraph with inline citations marked as [1], [2], etc.</description>
+    <requirements>
+      <requirement>2-3 citations with realistic source information</requirement>
+      <requirement>Each citation should have a title, URL, and optional description/quote</requirement>
+      <requirement>Make the content informative and the sources credible</requirement>
+    </requirements>
+    <rule>Format citations as numbered references within the text.</rule>
+  </citations>`;
+
 export function getSystemPrompt({
   modelName,
   dateTime,
@@ -87,9 +87,7 @@ export function getSystemPrompt({
 }) {
   const prompt = SYSTEM_PROMPT.replaceAll('{MODEL_NAME}', modelName)
     .replaceAll('{DATE_TIME}', dateTime)
-    .replaceAll(
-      '{WEB_SEARCH_ENABLED}',
-      webSearchEnabled ? WebSearchPrompt : '',
-    );
+    .replaceAll('{WEB_SEARCH_ENABLED}', webSearchEnabled ? WebSearchPrompt : '')
+    .replaceAll('{CITATIONS_ENABLED}', webSearchEnabled ? CitationsPrompt : '');
   return prompt;
 }

@@ -23,6 +23,7 @@ import {
   deleteMessages,
   getChatByIdWithMessages,
   saveMessages,
+  updateChatTitle,
 } from '@/lib/api/server/services/chat';
 import { createMemoryTools } from '@/lib/tools/supermemory';
 import { JsonValue } from '@prisma/client/runtime/library';
@@ -88,9 +89,18 @@ export async function POST(req: Request) {
     }
 
     let chatWithMessages = chat;
+    let isNewChat = false;
 
     if (!chat) {
-      const title = await generateTitleForChat({ message });
+      isNewChat = true;
+      const firstTextLikePart = message.parts.find(
+        part => part.type === 'text',
+      );
+      const title =
+        firstTextLikePart && firstTextLikePart.type === 'text'
+          ? firstTextLikePart.text.slice(0, 80)
+          : 'Adding Title...';
+
       const newChat = await createChat({
         userId: session.user.id,
         chatId: id,
@@ -112,26 +122,28 @@ export async function POST(req: Request) {
     if (trigger === 'message-rewrite') {
       const messageIds = chat?.messages.map(message => message.id);
       const messageIndex = messageIds?.indexOf(message.id);
-      if (!messageIds || messageIndex === -1) {
+      if (!messageIds || !messageIndex || messageIndex === -1) {
         return fail('No messages to rewrite', 400);
       }
-      messageIdsToDelete = messageIds.slice(messageIndex);
+      messageIdsToDelete = messageIds.slice(messageIndex + 1);
     }
 
-    await saveMessages({
-      messages: [
-        {
-          chatId: id,
-          role: 'user',
-          parts: message.parts as JsonValue,
-          metadata: message.metadata as JsonValue,
-          id: generateId(),
-          modelId: 'N/A',
-          attachmentUrls: [],
-          createdAt: new Date(),
-        },
-      ],
-    });
+    if (trigger === 'message-send') {
+      await saveMessages({
+        messages: [
+          {
+            chatId: id,
+            role: 'user',
+            parts: message.parts as JsonValue,
+            metadata: message.metadata as JsonValue,
+            id: message.id,
+            modelId: 'N/A',
+            attachmentUrls: [],
+            createdAt: new Date(),
+          },
+        ],
+      });
+    }
 
     const uiMessages = [
       ...convertToUIMessages(chatWithMessages?.messages ?? []),
@@ -204,6 +216,14 @@ export async function POST(req: Request) {
               });
               if (messageIdsToDelete.length > 0) {
                 await deleteMessages(messageIdsToDelete);
+              }
+              if (isNewChat) {
+                const title = await generateTitleForChat({ message });
+                await updateChatTitle({
+                  chatId: id,
+                  userId: session?.user?.id ?? '',
+                  title,
+                });
               }
             },
             generateMessageId: generateId,

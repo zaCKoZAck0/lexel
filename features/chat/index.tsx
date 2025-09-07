@@ -76,21 +76,28 @@ export function Chat({
   const [input, setInput] = useState('');
 
   const rewrite = (messageId: string) => {
-    const messageIdx = messages.findIndex(message => message.id === messageId);
-    if (messageIdx < 1) {
-      return;
-    }
-    setMessages(messages.slice(0, messageIdx));
-    regenerate({
-      messageId: messages.at(messageIdx - 1)?.id,
-      body: {
-        trigger: 'message-rewrite',
-        modelInfo: modelInfo,
-        userInfo: {
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        },
-      },
+    let prevId: string | undefined;
+    let didSlice = false;
+    setMessages(prev => {
+      const idx = prev.findIndex(m => m.id === messageId);
+      if (idx < 1) return prev;
+      prevId = prev.at(idx - 1)?.id;
+      didSlice = true;
+      const newState = prev.slice(0, idx);
+      return newState;
     });
+    if (didSlice && prevId) {
+      regenerate({
+        messageId: prevId,
+        body: {
+          trigger: 'message-rewrite',
+          modelInfo: modelInfo,
+          userInfo: {
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
+        },
+      });
+    }
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {

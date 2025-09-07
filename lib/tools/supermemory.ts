@@ -3,7 +3,11 @@ import { tool } from 'ai';
 import { z } from 'zod';
 
 export function createMemoryTools(userId: string) {
-  const tools = supermemoryTools(process.env.SUPERMEMORY_API_KEY!, {
+  const apiKey = process.env.SUPERMEMORY_API_KEY;
+  if (!apiKey) {
+    throw new Error('SUPERMEMORY_API_KEY is required');
+  }
+  const tools = supermemoryTools(apiKey, {
     containerTags: [userId],
   });
 
@@ -46,7 +50,19 @@ export function createMemoryTools(userId: string) {
           error: 'addMemory tool is not available',
         };
       }
-      return await tools.addMemory.execute(input, options);
+      try {
+        return await tools.addMemory.execute(input, options);
+      } catch (error) {
+        console.error('Supermemory addMemory error:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          details:
+            error instanceof Error
+              ? { name: error.name, stack: error.stack }
+              : undefined,
+        };
+      }
     },
   });
 

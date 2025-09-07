@@ -20,7 +20,7 @@ export type MemoryResult = {
 };
 
 export type SearchMemoryPart = {
-  type: 'tool-search_memories';
+  type: 'tool-searchMemories';
   state: 'output-available' | 'input-available';
   toolCallId: string;
   input: { informationToGet: string };
@@ -33,7 +33,7 @@ export type SearchMemoryPart = {
 };
 
 export type AddMemoryPart = {
-  type: 'tool-add_memory';
+  type: 'tool-addMemory';
   state: 'output-available' | 'input-available';
   toolCallId: string;
   input: {
