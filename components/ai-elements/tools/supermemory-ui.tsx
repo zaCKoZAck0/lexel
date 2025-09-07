@@ -58,6 +58,9 @@ export function SearchMemoryUI({
 }) {
   const { state, input, output, error } = part;
 
+  console.log('output', output);
+  console.log('input', input);
+
   if (state === 'input-available') {
     return (
       <div className={cn('rounded-md border p-3', className)}>
@@ -121,7 +124,7 @@ export function SearchMemoryUI({
               <Search className="size-3" />
               {
                 <span className="w-[200px] truncate">
-                  `&quot;{input.informationToGet}&quot;`
+                  &quot;{input.informationToGet}&quot;
                 </span>
               }
             </p>
@@ -129,7 +132,7 @@ export function SearchMemoryUI({
         </AccordionTrigger>
         <AccordionContent className="px-3 pb-2">
           <div className="space-y-2 py-2">
-            {output.results.slice(0, 5).map(result => (
+            {output.results.filter(result => result.content).slice(0, 5).map(result => (
               <div
                 key={result.id}
                 className="rounded-md bg-muted border shadow text-muted-foreground py-1 px-2 text-sm"
@@ -137,7 +140,7 @@ export function SearchMemoryUI({
                 <div className="space-y-1">
                   <div className="flex-1">
                     <p className="text-foreground font-serif font-semibold italic line-clamp-1">
-                      `&quot;{result.content}&quot;`
+                      &quot;{result.content}&quot;
                     </p>
                   </div>
                 </div>
@@ -149,6 +152,9 @@ export function SearchMemoryUI({
               </div>
             )}
           </div>
+          {output.results.filter(result => !result.content).length > 0 && (
+            <p>No memories found matching this query.</p>
+          )}
         </AccordionContent>
       </AccordionItem>
     </Accordion>
@@ -219,7 +225,7 @@ export function AddMemoryUI({
             <div className="space-y-2">
               <div className="rounded-md bg-muted text-muted-foreground border shadow py-1 px-2 text-sm">
                 <p className="font-serif font-semibold italic line-clamp-1">
-                  `&quot;{input.memory}&quot;`
+                  &quot;{input.memory}&quot;
                 </p>
               </div>
               <small className="text-muted-foreground text-sm">

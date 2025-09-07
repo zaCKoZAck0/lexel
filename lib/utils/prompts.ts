@@ -24,6 +24,8 @@ const SYSTEM_PROMPT = `<system-prompt>
     <rule>Use Markdown blockquotes to include any relevant quotes that support or supplement your answer.</rule>
   </quotations>
 
+  {CITATIONS_ENABLED}
+
   <lists-and-tables>
     <rule>Prefer unordered lists (bullet points) over ordered lists (numbered).</rule>
     <rule>Use flat lists for simplicity.</rule>
@@ -47,13 +49,13 @@ const SYSTEM_PROMPT = `<system-prompt>
   <tools>
     {WEB_SEARCH_ENABLED}
     <tool name="searchMemories">
-      <rule>Always use searchMemories to retrieve previously stored information that may help answer the current user query.</rule>
+      <rule>Use searchMemories to retrieve previously stored information that may help answer the current user query.</rule>
       <rule>Retrieve memory before answering if past context may be helpful.</rule>
       <assumption>Always assume that the user has previous memories stored in the system.</assumption>
       <privacy>Be transparent about what information is returned by searchMemories, always include the retrieved memory in the response.</privacy>
     </tool>
     <tool name="addMemory">
-      <rule>Always use addMemory to save important details from the user. Only save facts, preferences, personal information or context that will be useful later.</rule>
+      <rule>Use addMemory to save important details from the user. Only save facts, preferences, personal information or context that will be useful later.</rule>
       <rule>Don't store trivial or temporary details</rule>
       <objective>Help the user more effectively by remembering relevant long-term details and reusing them contextually.</objective>
     </tool>
@@ -63,7 +65,6 @@ const SYSTEM_PROMPT = `<system-prompt>
 const WebSearchPrompt = `<tool name="webSearch">
   <rule>Always use web search to supplement your knowledge and provide accurate information.</rule>
   <rule>Be Specific and Use Keywords: Clearly define the main topic or question using precise and relevant keywords. Avoid filler words and focus on the core information you want to find.</rule>
-  <mandatory>This tool should always be used, for all user queries.</mandatory>
 </tool>`;
 
 const CitationsPrompt = `<citations>
