@@ -122,7 +122,7 @@ export async function POST(req: Request) {
     if (trigger === 'message-rewrite') {
       const messageIds = chat?.messages.map(message => message.id);
       const messageIndex = messageIds?.indexOf(message.id);
-      if (!messageIds || !messageIndex || messageIndex === -1) {
+      if (!messageIds || messageIndex === undefined || messageIndex === -1) {
         return fail('No messages to rewrite', 400);
       }
       messageIdsToDelete = messageIds.slice(messageIndex + 1);
