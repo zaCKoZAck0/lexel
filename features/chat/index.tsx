@@ -7,7 +7,6 @@ import React from 'react';
 import { Model } from '@/lib/models';
 import { AIMessage } from '@/lib/types/ai-message';
 import { ConversationWindow } from './_components/conversation-window';
-import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
 import { InputContainer } from '@/features/chat/_components/input-container';
 import { toast } from 'sonner';
@@ -40,14 +39,22 @@ export function Chat({
     console.log('modelInfo', modelInfo);
   }, [modelInfo]);
 
-  const { messages, sendMessage, status, stop } = useChat<AIMessage>({
+  const {
+    messages,
+    setMessages,
+    sendMessage,
+    status,
+    stop,
+    regenerate,
+    clearError,
+  } = useChat<AIMessage>({
     onFinish: () => {
       window.history.replaceState({}, '', `/chat/${chatId}`);
     },
     onError: error => {
       console.error('An error occurred:', error);
-
       toast.error(error.message);
+      clearError();
     },
     messages: initialMessages,
     transport: new DefaultChatTransport({
@@ -56,6 +63,7 @@ export function Chat({
         return {
           body: {
             id: chatId,
+            trigger: 'message-send',
             message: messages.at(-1),
             ...body,
           },
@@ -66,6 +74,31 @@ export function Chat({
   });
 
   const [input, setInput] = useState('');
+
+  const rewrite = (messageId: string) => {
+    let prevId: string | undefined;
+    let didSlice = false;
+    setMessages(prev => {
+      const idx = prev.findIndex(m => m.id === messageId);
+      if (idx < 1) return prev;
+      prevId = prev.at(idx - 1)?.id;
+      didSlice = true;
+      const newState = prev.slice(0, idx);
+      return newState;
+    });
+    if (didSlice && prevId) {
+      regenerate({
+        messageId: prevId,
+        body: {
+          trigger: 'message-rewrite',
+          modelInfo: modelInfo,
+          userInfo: {
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
+        },
+      });
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -91,7 +124,7 @@ export function Chat({
   };
 
   return (
-    <div className="max-w-4xl mx-auto relative min-h-screen">
+    <div className="max-w-3xl w-screen pt-8 relative min-h-screen">
       <div className="flex flex-col h-full">
         <div className="w-full flex-1">
           <ConversationWindow
@@ -101,6 +134,7 @@ export function Chat({
             status={status}
             selectedModelId={modelInfo.modelId}
             chatId={chatId}
+            rewrite={rewrite}
           />
         </div>
         {/* Spacer for bottom positioning */}

@@ -1,9 +1,11 @@
 import { Chat } from '@/features/chat';
 import { auth } from '@/lib/auth/auth';
-import { getModelDetails } from '@/lib/models';
+import { allModelsForProviders, getModelDetails } from '@/lib/models';
 import { getChatByIdWithMessages } from '@/lib/api/server/services/chat';
 import { getByUserId } from '@/lib/api/server/services/user-preferences';
+import { getAllAvailableProvidersForUserId } from '@/lib/api/server/services/api-keys';
 import { convertToUIMessages } from '@/lib/utils/utils';
+import { ProviderId } from '@/lib/models/providers';
 import { notFound } from 'next/navigation';
 
 export default async function ChatPage({
@@ -29,12 +31,17 @@ export default async function ChatPage({
       ).filter(model => !!model)
     : [];
 
+  const availableProviders = (await getAllAvailableProvidersForUserId(
+    session?.user?.id || '',
+  )) as ProviderId[];
+  const availableModels = allModelsForProviders(availableProviders);
+
   return (
     <Chat
       chatId={chat.id}
       initialMessages={uiMessages}
       favoriteModels={favoriteModels}
-      availableModels={[]}
+      availableModels={availableModels}
     />
   );
 }

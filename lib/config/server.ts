@@ -1,4 +1,4 @@
-'server only';
+import 'server-only';
 
 export const MAX_API_KEYS_PER_PROVIDER = 5;
 

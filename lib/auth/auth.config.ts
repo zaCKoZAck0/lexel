@@ -23,11 +23,10 @@ export default {
       }
       return session;
     },
-    // authorized({ auth }) {
-    //   const isAuthenticated = !!auth?.user;
-
-    //   return isAuthenticated;
-    // },
+    authorized({ auth }) {
+      const isAuthenticated = !!auth?.user;
+      return isAuthenticated;
+    },
   },
   providers: [GitHub],
 } as NextAuthConfig;

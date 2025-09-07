@@ -17,12 +17,14 @@ export function MessageActions({
   chatId,
   selectedModelId,
   messages,
+  rewrite,
 }: {
   message: AIMessage;
   part: TextUIPart;
   chatId?: string;
   selectedModelId?: string;
   messages?: AIMessage[];
+  rewrite: (messageId: string) => void;
 }) {
   if (message.role === 'assistant') {
     return (
@@ -32,6 +34,7 @@ export function MessageActions({
         chatId={chatId}
         selectedModelId={selectedModelId}
         messages={messages}
+        rewrite={rewrite}
       />
     );
   }
@@ -44,12 +47,14 @@ function AssistantActions({
   chatId,
   selectedModelId,
   messages,
+  rewrite,
 }: {
   message: AIMessage;
   part: TextUIPart;
   chatId?: string;
   selectedModelId?: string;
   messages?: AIMessage[];
+  rewrite: (messageId: string) => void;
 }) {
   const handleCopy = async () => {
     try {
@@ -73,12 +78,14 @@ function AssistantActions({
   };
 
   return (
-    <Actions className="mt-2 mb-4 flex items-center w-full gap-1">
-      <div className="flex items-center">
-        {message.role === 'assistant' && <MessageMetadata message={message} />}
+    <Actions className="mt-2 mb-4 flex items-center w-full gap-2">
+      <div className="flex items-center gap-2">
+        {message.role === 'assistant' && (
+          <MessageMetadata rewrite={rewrite} message={message} />
+        )}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="xs" onClick={handleCopy}>
+            <Button variant="outline" size="xs" onClick={handleCopy}>
               <CopyIcon className="size-4" />
             </Button>
           </TooltipTrigger>

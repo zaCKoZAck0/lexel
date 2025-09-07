@@ -20,9 +20,12 @@ import { getSystemPrompt } from '@/lib/utils/prompts';
 import { getProviderOptions } from '@/lib/models/provider-options';
 import {
   createChat,
+  deleteMessages,
   getChatByIdWithMessages,
   saveMessages,
+  updateChatTitle,
 } from '@/lib/api/server/services/chat';
+import { createMemoryTools } from '@/lib/tools/supermemory';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { convertToUIMessages } from '@/lib/utils/utils';
 import { webSearch } from '@/lib/tools/exa-web-search';
@@ -43,6 +46,7 @@ interface RequestBody {
     reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high';
     thinkingEnabled?: boolean;
   };
+  trigger: 'message-send' | 'message-rewrite';
 }
 
 export async function POST(req: Request) {
@@ -58,7 +62,7 @@ export async function POST(req: Request) {
     // Validate request body
     const json = await req.json();
 
-    const { id, userInfo, message, modelInfo } = json as RequestBody;
+    const { id, userInfo, message, modelInfo, trigger } = json as RequestBody;
 
     // Validate model
     const model = getModelDetails(modelInfo.modelId);
@@ -78,14 +82,25 @@ export async function POST(req: Request) {
       return fail('Unauthorized - Please log in to continue', 401);
     }
 
-    if (chat && chat.userId !== session.user.id) {
+    const userId = session.user.id;
+
+    if (chat && chat.userId !== userId) {
       return fail('Chat not found', 404);
     }
 
     let chatWithMessages = chat;
+    let isNewChat = false;
 
     if (!chat) {
-      const title = await generateTitleForChat({ message });
+      isNewChat = true;
+      const firstTextLikePart = message.parts.find(
+        part => part.type === 'text',
+      );
+      const title =
+        firstTextLikePart && firstTextLikePart.type === 'text'
+          ? firstTextLikePart.text.slice(0, 80)
+          : 'Adding Title...';
+
       const newChat = await createChat({
         userId: session.user.id,
         chatId: id,
@@ -102,25 +117,40 @@ export async function POST(req: Request) {
       return fail('Missing provider API key', 401);
     }
 
-    await saveMessages({
-      messages: [
-        {
-          chatId: id,
-          role: 'user',
-          parts: [] as JsonValue,
-          metadata: [] as JsonValue,
-          id: message.id,
-          modelId: 'N/A',
-          attachmentUrls: [],
-          createdAt: new Date(),
-        },
-      ],
-    });
+    let messageIdsToDelete: string[] = [];
+
+    if (trigger === 'message-rewrite') {
+      const messageIds = chat?.messages.map(message => message.id);
+      const messageIndex = messageIds?.indexOf(message.id);
+      if (!messageIds || messageIndex === undefined || messageIndex === -1) {
+        return fail('No messages to rewrite', 400);
+      }
+      messageIdsToDelete = messageIds.slice(messageIndex + 1);
+    }
+
+    if (trigger === 'message-send') {
+      await saveMessages({
+        messages: [
+          {
+            chatId: id,
+            role: 'user',
+            parts: message.parts as JsonValue,
+            metadata: message.metadata as JsonValue,
+            id: message.id,
+            modelId: 'N/A',
+            attachmentUrls: [],
+            createdAt: new Date(),
+          },
+        ],
+      });
+    }
 
     const uiMessages = [
       ...convertToUIMessages(chatWithMessages?.messages ?? []),
       message,
     ];
+
+    const memoryTools = createMemoryTools(userId);
 
     let reasoningStartTimeMs: number | undefined;
     let reasoningEndTimeMs: number | undefined;
@@ -137,6 +167,8 @@ export async function POST(req: Request) {
             ...(modelInfo.webSearchEnabled && {
               webSearch,
             }),
+            searchMemories: memoryTools.searchMemories,
+            addMemory: memoryTools.addMemory,
           },
           stopWhen: stepCountIs(5),
           experimental_transform: smoothStream({ chunking: 'word' }),
@@ -182,6 +214,17 @@ export async function POST(req: Request) {
                   createdAt: new Date(),
                 })),
               });
+              if (messageIdsToDelete.length > 0) {
+                await deleteMessages(messageIdsToDelete);
+              }
+              if (isNewChat) {
+                const title = await generateTitleForChat({ message });
+                await updateChatTitle({
+                  chatId: id,
+                  userId: session?.user?.id ?? '',
+                  title,
+                });
+              }
             },
             generateMessageId: generateId,
             messageMetadata: ({ part }) => {
@@ -193,7 +236,6 @@ export async function POST(req: Request) {
                 };
               }
               if (part.type === 'finish') {
-                console.log(part.totalUsage);
                 return {
                   totalTokens: part.totalUsage.totalTokens,
                   responseEndTimeMs: performance.now(),
