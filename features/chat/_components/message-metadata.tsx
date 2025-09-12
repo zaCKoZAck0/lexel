@@ -12,15 +12,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { getProviderInfo } from '@/lib/models/providers';
 
 export function MessageMetadata({
   message,
-  rewrite,
 }: {
   message: AIMessage;
   rewrite: (messageId: string) => void;
 }) {
-  const modelName = getModelDetails(message.metadata?.modelId || '')?.name;
   const totalTokens = message.metadata?.totalTokens;
   const tokensPerSecond =
     totalTokens &&
@@ -37,22 +36,13 @@ export function MessageMetadata({
     1000;
 
   return (
-    <div className="flex gap-2 items-center">
-      {modelName && (
-        <p className="bg-gradient-to-l from-muted-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
-          {modelName}
-        </p>
-      )}
-      <Button variant="outline" size="xs" onClick={() => rewrite(message.id)}>
-        <RefreshCcwIcon className="size-4" />
-        Rewrite
-      </Button>
+    <div className="flex gap-1 items-center w-full justify-between">
       {(totalTokens || tokensPerSecond || timeToFirstTokenSeconds) && (
         <Popover>
           <Tooltip>
             <TooltipTrigger asChild>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="xs">
+                <Button variant="ghost" size="xs">
                   <ZapIcon className="size-4" />
                 </Button>
               </PopoverTrigger>

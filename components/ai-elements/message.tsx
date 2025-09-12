@@ -29,7 +29,7 @@ export const MessageContent = ({
   <div
     className={cn(
       'flex flex-col gap-2 overflow-hidden rounded-lg px-4 py-3 text-foreground text-base',
-      'group-[.is-user]:bg-primary group-[.is-user]:text-primary-foreground',
+      'group-[.is-user]:bg-secondary group-[.is-user]:text-secondary-foreground group-[.is-user]:rounded-2xl group-[.is-user]:rounded-br-none',
       'group-[.is-assistant]:text-foreground group-[.is-assistant]:w-full',
       className,
     )}

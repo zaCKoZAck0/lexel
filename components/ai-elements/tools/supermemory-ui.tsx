@@ -64,9 +64,9 @@ export function SearchMemoryUI({
   if (state === 'input-available') {
     return (
       <div className={cn('rounded-md border p-3', className)}>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Search className="size-4" />
-          <span className="text-sm">Searching memories...</span>
+        <div className="flex items-center justify-between w-full">
+          <SupermemoryIcon className="h-4" />
+          <ShinyText text="Searching memories..." />
         </div>
       </div>
     );
@@ -80,29 +80,6 @@ export function SearchMemoryUI({
           <span className="text-sm">{error}</span>
         </div>
       </div>
-    );
-  }
-
-  if (!output?.results || output.results.length === 0) {
-    return (
-      <Accordion type="single" collapsible className={className}>
-        <AccordionItem
-          value="search-results"
-          className="data-[state=closed]:hover:bg-muted rounded-md border last:border-b transition-colors"
-        >
-          <AccordionTrigger className="hover:no-underline px-3 py-2 text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Search className="size-4" />
-              <span>{input?.informationToGet}</span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-3 pb-2">
-            <div className="text-muted-foreground text-sm">
-              No memories found matching your query.
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
     );
   }
 
@@ -120,43 +97,51 @@ export function SearchMemoryUI({
         <AccordionTrigger className="hover:no-underline px-3 py-2 text-muted-foreground">
           <div className="flex items-center w-full justify-between">
             <SupermemoryIcon className="h-4" />
-            <p className="flex items-center gap-2 hidden md:inline-flex">
+            <p className="items-center gap-2 hidden md:flex">
               <Search className="size-3" />
               {
                 <span className="w-[200px] truncate">
-                  &quot;{input.informationToGet}&quot;
+                  &quot;{input?.informationToGet}&quot;
                 </span>
               }
             </p>
           </div>
         </AccordionTrigger>
         <AccordionContent className="px-3 pb-2">
-          <div className="space-y-2 py-2">
-            {output.results
-              .filter(result => result.content)
-              .slice(0, 5)
-              .map(result => (
-                <div
-                  key={result.id}
-                  className="rounded-md bg-muted border shadow text-muted-foreground py-1 px-2 text-sm"
-                >
-                  <div className="space-y-1">
-                    <div className="flex-1">
-                      <p className="text-foreground font-serif font-semibold italic line-clamp-1">
-                        &quot;{result.content}&quot;
-                      </p>
+          {output?.results.length && output?.results.length > 0 ? (
+            <>
+              <div className="space-y-2 py-2">
+                {output?.results
+                  .filter(result => result.content)
+                  .slice(0, 5)
+                  .map(result => (
+                    <div
+                      key={result.id}
+                      className="rounded-md bg-muted border shadow text-muted-foreground py-1 px-2 text-sm"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex-1">
+                          <p className="text-foreground font-serif font-semibold italic line-clamp-1">
+                            &quot;{result.content}&quot;
+                          </p>
+                        </div>
+                      </div>
                     </div>
+                  ))}
+                {output.results.length > 5 && (
+                  <div className="text-sm font-semibold text-muted-foreground text-right">
+                    +{output?.results.length - 5} more
                   </div>
-                </div>
-              ))}
-            {output.results.length > 5 && (
-              <div className="text-sm font-semibold text-muted-foreground text-right">
-                +{output.results.length - 5} more
+                )}
               </div>
-            )}
-          </div>
-          {output.results.filter(result => !result.content).length > 0 && (
-            <p>No memories found matching this query.</p>
+              {output.results.filter(result => !result.content).length > 0 && (
+                <p>No memories found matching this query.</p>
+              )}
+            </>
+          ) : (
+            <>
+              <p>No memories found matching this query.</p>
+            </>
           )}
         </AccordionContent>
       </AccordionItem>
