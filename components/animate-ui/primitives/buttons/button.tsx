@@ -3,17 +3,27 @@
 import * as React from 'react';
 import { motion, type HTMLMotionProps } from 'motion/react';
 
-import {
-  Slot,
-  type WithAsChild,
-} from '@/components/animate-ui/primitives/animate/slot';
+import { Slot } from '@/components/animate-ui/primitives/animate/slot';
 
-type ButtonProps = WithAsChild<
-  HTMLMotionProps<'button'> & {
-    hoverScale?: number;
-    tapScale?: number;
-  }
->;
+type ButtonProps = Omit<
+  HTMLMotionProps<'button'>,
+  | 'children'
+  | 'onDrag'
+  | 'onDragStart'
+  | 'onDragEnd'
+  | 'onDragEnter'
+  | 'onDragLeave'
+  | 'onDragOver'
+  | 'onDrop'
+  | 'onAnimationStart'
+  | 'onAnimationEnd'
+  | 'onAnimationIteration'
+> & {
+  hoverScale?: number;
+  tapScale?: number;
+  children?: React.ReactNode;
+  asChild?: boolean;
+};
 
 function Button({
   hoverScale = 1.05,
