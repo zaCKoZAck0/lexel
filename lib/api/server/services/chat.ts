@@ -150,7 +150,9 @@ export async function getChatByIdWithMessages(
         id: chatId,
       },
       include: {
-        messages: true,
+        messages: {
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
   } catch (error) {
