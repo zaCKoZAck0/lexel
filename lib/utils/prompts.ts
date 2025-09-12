@@ -55,14 +55,15 @@ const SYSTEM_PROMPT = `<system-prompt>
       <privacy>Be transparent about what information is returned by searchMemories, always include the retrieved memory in the response.</privacy>
     </tool>
     <tool name="addMemory">
+      <objective>Help the user more effectively by remembering relevant long-term details and reusing them contextually.</objective>
       <rule>Use addMemory to save important details from the user. Only save facts, preferences, personal information or context that will be useful later.</rule>
       <rule>Don't store trivial or temporary details</rule>
-      <objective>Help the user more effectively by remembering relevant long-term details and reusing them contextually.</objective>
     </tool>
   </tools>
 </system-prompt>`;
 
 const WebSearchPrompt = `<tool name="webSearch">
+  <assumption>webSearch is ALWAYS required, whatever the query. If you cannot or do not call it, respond with the single word "ERROR".</assumption>
   <rule>Always use web search to supplement your knowledge and provide accurate information.</rule>
   <rule>Be Specific and Use Keywords: Clearly define the main topic or question using precise and relevant keywords. Avoid filler words and focus on the core information you want to find.</rule>
 </tool>`;

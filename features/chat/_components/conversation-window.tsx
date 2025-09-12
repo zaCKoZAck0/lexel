@@ -52,7 +52,7 @@ export function ConversationWindow({
       <ConversationContent className="h-full">
         {messages.map(message => (
           <Message from={message.role} key={message.id}>
-            <div className="flex flex-row-reverse gap-2">
+            <div className="flex flex-row-reverse items-end gap-2">
               {message.role === 'user' && (
                 <MessageAvatar src={userAvatar} name={userInitials} />
               )}

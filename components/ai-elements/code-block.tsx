@@ -19,7 +19,10 @@ import {
   useMemo,
 } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { nord, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {
+  coldarkCold,
+  coldarkDark,
+} from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 type CodeBlockContextType = {
   code: string;
@@ -133,7 +136,7 @@ export const CodeBlock = ({
     <CodeBlockContext.Provider value={contextValue}>
       <div
         className={cn(
-          'relative w-full overflow-hidden rounded-lg border bg-background text-foreground',
+          'relative w-full overflow-hidden rounded-lg border bg-card text-card-foreground',
           className,
         )}
         {...props}
@@ -170,7 +173,7 @@ export const CodeBlock = ({
                 }}
                 language={language}
                 showLineNumbers={showLineNumbers}
-                style={oneLight}
+                style={coldarkCold}
                 wrapLines={isWrapped}
                 wrapLongLines={isWrapped}
                 lineProps={
@@ -201,7 +204,7 @@ export const CodeBlock = ({
                 }}
                 language={language}
                 showLineNumbers={showLineNumbers}
-                style={nord}
+                style={coldarkDark}
                 wrapLines={isWrapped}
                 wrapLongLines={isWrapped}
                 lineProps={
