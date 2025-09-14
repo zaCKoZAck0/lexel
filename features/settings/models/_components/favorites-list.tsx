@@ -32,7 +32,8 @@ export function FavoritesList({
       <CardHeader>
         <CardTitle>Your favorite Models ({favoriteModels.length})</CardTitle>
         <CardDescription>
-          Use arrow keys to reorder and manage the models shown in your selector.
+          Use arrow keys to reorder and manage the models shown in your
+          selector.
         </CardDescription>
       </CardHeader>
       <CardContent>
