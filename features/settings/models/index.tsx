@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { allModels, type Model } from '@/lib/models';
+import { PROVIDER_MAP } from '@/lib/models/providers';
+import { PinList, type PinListItem } from '@/components/ui/pin-list';
 import {
   getUserPreferencesQuery,
   useUpdatePreferencesMutation,
@@ -16,9 +18,11 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FavoritesList } from './_components/favorites-list';
-import { AvailableList } from './_components/available-list';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Search, Pin, ChevronUp, ChevronDown } from 'lucide-react';
 import { AvailableProviders } from './_components/available-providers';
+import { ModelDetails } from './_components/model-details';
 
 interface ModelsSettingsProps {}
 
@@ -33,7 +37,6 @@ export function ModelsSettings({}: ModelsSettingsProps) {
   const updateMutation = useUpdatePreferencesMutation();
 
   const [favoriteModelIds, setFavoriteModelIds] = useState<string[]>([]);
-  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
 
   useEffect(() => {
     if (preferences?.favoriteModels) {
@@ -41,38 +44,8 @@ export function ModelsSettings({}: ModelsSettingsProps) {
     }
   }, [preferences?.favoriteModels]);
 
-  const favoriteModels = useMemo<Model[]>(() => {
-    return favoriteModelIds
-      .map(id => allModels.find(m => m.id === id))
-      .filter((m): m is Model => Boolean(m));
-  }, [favoriteModelIds]);
-
-  const availableModels = allModels.filter(
-    model =>
-      !favoriteModelIds.includes(model.id) &&
-      availableProviders.includes(model.provider),
-  );
-
-  const filteredAvailableModels = availableModels.filter(
-    model =>
-      model.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      model.provider.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  const modelsByProvider = filteredAvailableModels.reduce(
-    (acc, model) => {
-      if (!acc[model.provider]) {
-        acc[model.provider] = [];
-      }
-      acc[model.provider].push(model);
-      return acc;
-    },
-    {} as Record<string, Model[]>,
-  );
-
   const persistFavorites = (ids: string[]) => {
     setFavoriteModelIds(ids);
-    // Use debounced mutation to prevent excessive API calls during rapid interactions
     updateMutation.debouncedMutate({ favoriteModels: ids });
   };
 
@@ -86,21 +59,133 @@ export function ModelsSettings({}: ModelsSettingsProps) {
     persistFavorites(next);
   };
 
-  const moveModelUp = (index: number) => {
-    if (index > 0) {
+  const moveModelUp = (modelId: string) => {
+    const currentIndex = favoriteModelIds.indexOf(modelId);
+    if (currentIndex > 0) {
       const newIds = [...favoriteModelIds];
-      [newIds[index - 1], newIds[index]] = [newIds[index], newIds[index - 1]];
+      [newIds[currentIndex - 1], newIds[currentIndex]] = [
+        newIds[currentIndex],
+        newIds[currentIndex - 1],
+      ];
       persistFavorites(newIds);
-      setFocusedIndex(index - 1);
     }
   };
 
-  const moveModelDown = (index: number) => {
-    if (index < favoriteModelIds.length - 1) {
+  const moveModelDown = (modelId: string) => {
+    const currentIndex = favoriteModelIds.indexOf(modelId);
+    if (currentIndex < favoriteModelIds.length - 1) {
       const newIds = [...favoriteModelIds];
-      [newIds[index], newIds[index + 1]] = [newIds[index + 1], newIds[index]];
+      [newIds[currentIndex], newIds[currentIndex + 1]] = [
+        newIds[currentIndex + 1],
+        newIds[currentIndex],
+      ];
       persistFavorites(newIds);
-      setFocusedIndex(index + 1);
+    }
+  };
+
+  // Transform models into pin list items
+  const transformModelToPinItem = (model: Model): PinListItem => {
+    const providerInfo = PROVIDER_MAP[model.provider];
+    return {
+      id: model.id,
+      name: model.name,
+      info: `${model.provider} • ${model.modalities.join(', ')} • $${model.priceInUSD.input}/${model.priceInUSD.per}`,
+      icon: providerInfo?.Icon || (() => null),
+      pinned: favoriteModelIds.includes(model.id),
+    };
+  };
+
+  const availableModels = useMemo(() => {
+    const baseFiltered = allModels.filter(model =>
+      availableProviders.includes(model.provider),
+    );
+
+    const searched = searchQuery
+      ? baseFiltered.filter(
+          model =>
+            model.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            model.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            model.provider.toLowerCase().includes(searchQuery.toLowerCase()),
+        )
+      : baseFiltered;
+
+    // Sort to put favorites first in their specified order, then non-favorites
+    const favorites = favoriteModelIds
+      .map(id => searched.find(model => model.id === id))
+      .filter((model): model is Model => model !== undefined);
+
+    const nonFavorites = searched.filter(
+      model => !favoriteModelIds.includes(model.id),
+    );
+
+    return [...favorites, ...nonFavorites];
+  }, [availableProviders, searchQuery, favoriteModelIds]);
+
+  const renderModelContent = (model: Model, renderedItem: PinListItem) => {
+    const isPinned = renderedItem.pinned;
+    const currentIndex = favoriteModelIds.indexOf(model.id);
+    const canMoveUp = isPinned && currentIndex > 0;
+    const canMoveDown = isPinned && currentIndex < favoriteModelIds.length - 1;
+
+    return (
+      <>
+        {isPinned && (
+          <div className="flex flex-col gap-1 flex-shrink-0">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0"
+              onClick={e => {
+                e.stopPropagation();
+                moveModelUp(model.id);
+              }}
+              disabled={!canMoveUp}
+              aria-label={`Move ${model.name} up`}
+              title="Move up"
+              type="button"
+            >
+              <ChevronUp className="h-3 w-3" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0"
+              onClick={e => {
+                e.stopPropagation();
+                moveModelDown(model.id);
+              }}
+              disabled={!canMoveDown}
+              aria-label={`Move ${model.name} down`}
+              title="Move down"
+              type="button"
+            >
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+        <div className="flex-1 min-w-0 cursor-default p-2">
+          <ModelDetails model={model} />
+        </div>
+        <Button
+          variant={isPinned ? 'secondary' : 'outline'}
+          size="icon"
+          onClick={e => {
+            e.stopPropagation();
+            handleTogglePin(model, renderedItem);
+          }}
+          aria-label={isPinned ? `Unpin ${model.name}` : `Pin ${model.name}`}
+          title={isPinned ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          <Pin className={`size-4 ${isPinned ? 'fill-current' : ''}`} />
+        </Button>
+      </>
+    );
+  };
+  const handleTogglePin = (model: Model, renderedItem: PinListItem) => {
+    if (favoriteModelIds.includes(model.id)) {
+      removeFromFavorites(model.id);
+    } else {
+      addToFavorites(model);
     }
   };
 
@@ -126,22 +211,55 @@ export function ModelsSettings({}: ModelsSettingsProps) {
       <div className="space-y-6 sm:space-y-6 max-w-full">
         <AvailableProviders availableProviders={availableProviders} />
 
-        <FavoritesList
-          favoriteModels={favoriteModels}
-          focusedIndex={focusedIndex}
-          onMoveUp={moveModelUp}
-          onMoveDown={moveModelDown}
-          onRemove={id => removeFromFavorites(id)}
-          onFocusChange={setFocusedIndex}
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle>AI Models</CardTitle>
+            <CardDescription>
+              Pin your favorite models to prioritize them in the chat selector.
+              {availableProviders.length === 0 &&
+                ' No providers configured - add API keys in settings to see models.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search models..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="pl-10 text-base sm:text-sm min-h-[44px]"
+                />
+              </div>
 
-        <AvailableList
-          modelsByProvider={modelsByProvider}
-          searchQuery={searchQuery}
-          onSearch={setSearchQuery}
-          onAdd={addToFavorites}
-          availableProviders={availableProviders}
-        />
+              {availableModels.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  {searchQuery ? (
+                    <>No models found matching "{searchQuery}"</>
+                  ) : availableProviders.length === 0 ? (
+                    <>
+                      No models available. Add API keys in settings to see
+                      models.
+                    </>
+                  ) : (
+                    <>No models available from configured providers.</>
+                  )}
+                </div>
+              ) : (
+                <PinList<Model>
+                  items={availableModels}
+                  renderItem={transformModelToPinItem}
+                  renderContent={renderModelContent}
+                  onTogglePin={handleTogglePin}
+                  labels={{
+                    pinned: 'Favorite Models',
+                    unpinned: 'Available Models',
+                  }}
+                />
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </TooltipProvider>
   );

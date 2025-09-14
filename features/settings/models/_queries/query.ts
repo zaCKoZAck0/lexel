@@ -85,10 +85,6 @@ export function useUpdatePreferencesMutation() {
       queryClient.setQueryData(preferencesQueryKeys.root, data);
       toast.success('Favorites updated — selector refreshed');
     },
-    onSettled: () => {
-      // Revalidate to sync with server if anything changed externally
-      queryClient.invalidateQueries({ queryKey: preferencesQueryKeys.root });
-    },
   });
 
   // Store the original mutate function in a ref to ensure stability

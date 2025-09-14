@@ -78,7 +78,7 @@ export function InputContainer({
 
       <PromptInput
         onSubmit={onSubmit}
-        className="bg-background/75 border-5 border-border/75 backdrop-blur-md shadow-lg shadow-primary"
+        className="bg-background/75 border-5 border-border/75 backdrop-blur-md shadow-lg shadow-primary rounded-2xl"
       >
         <PromptInputTextarea
           onChange={e => setInput(e.target.value)}
@@ -112,6 +112,7 @@ export function InputContainer({
                 !input.trim() || status !== 'ready' || !modelInfo.modelId
               }
               status={status}
+              className="rounded-lg"
             >
               <ArrowUpIcon className="w-4 h-4" />
             </PromptInputSubmit>
