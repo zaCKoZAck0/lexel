@@ -47,7 +47,7 @@ export function MessageMetadata({
                 </Button>
               </PopoverTrigger>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Stats for Nerds</TooltipContent>
+            <TooltipContent>Stats for Nerds</TooltipContent>
           </Tooltip>
           <PopoverContent className="w-64" side="top" align="start">
             <div className="space-y-2 text-sm">
