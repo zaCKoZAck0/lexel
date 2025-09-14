@@ -105,8 +105,8 @@ export function ModelDetails({ model }: ModelDetailsProps) {
   return (
     <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
       <div className="flex-1 space-y-1">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 text-muted-foreground">
+        <div className="flex items-center flex-wrap gap-2">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <ProviderIcons
               provider={actualProvider?.id || ''}
               className="h-4 w-4"
@@ -143,7 +143,12 @@ export function ModelDetails({ model }: ModelDetailsProps) {
           </Tooltip>
         </div>
         {model.description ? (
-          <p className="text-sm text-muted-foreground">{model.description}</p>
+          <p
+            title={model.description}
+            className="text-sm text-muted-foreground line-clamp-1"
+          >
+            {model.description}
+          </p>
         ) : (
           <p className="text-sm text-muted-foreground">
             No description available.
@@ -152,7 +157,10 @@ export function ModelDetails({ model }: ModelDetailsProps) {
         <div className="flex items-center gap-2 flex-wrap mt-1">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge className="font-mono" variant={getCostBadgeVariant()}>
+              <Badge
+                className="font-mono rounded-full"
+                variant={getCostBadgeVariant()}
+              >
                 {costSymbol}
               </Badge>
             </TooltipTrigger>
@@ -163,7 +171,7 @@ export function ModelDetails({ model }: ModelDetailsProps) {
           {model.features.includes('fast') && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge>
+                <Badge className="rounded-full">
                   <ZapIcon />
                   Fast
                 </Badge>
@@ -182,13 +190,18 @@ export function ModelDetails({ model }: ModelDetailsProps) {
                     <TooltipTrigger asChild>
                       <Badge
                         aria-label={feature.label}
-                        variant="outline"
-                        className="px-2 h-6"
+                        variant="secondary"
+                        className="px-2 h-6 rounded-full"
                       >
                         <Icon className="size-4" />
                       </Badge>
                     </TooltipTrigger>
-                    <TooltipContent>{feature.description}</TooltipContent>
+                    <TooltipContent>
+                      <div className="flex flex-col items-center">
+                        <p className="font-semibold">{feature.label}</p>
+                        <p>{feature.description}</p>
+                      </div>
+                    </TooltipContent>
                   </Tooltip>
                 );
               })}
