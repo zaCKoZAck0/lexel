@@ -143,18 +143,23 @@ export async function getChatById(chatId: string): Promise<ChatDTO | null> {
  */
 export async function getChatByIdWithMessages(
   chatId: string,
+  // take last N messages only
+  messagesLimit = 1000,
 ): Promise<ChatWithMessagesDTO | null> {
   try {
-    return await prisma.chat.findUnique({
+    const chatWithMessages = await prisma.chat.findUnique({
       where: {
         id: chatId,
       },
       include: {
         messages: {
-          orderBy: { createdAt: 'asc' },
+          orderBy: { createdAt: 'desc' },
+          take: messagesLimit,
         },
       },
     });
+    chatWithMessages?.messages.reverse(); // Ensure messages are in ascending order
+    return chatWithMessages;
   } catch (error) {
     console.error(error);
     throw new AppError('Failed to retrieve chat with messages', 500);

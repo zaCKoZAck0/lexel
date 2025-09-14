@@ -44,3 +44,9 @@ export function formatBytes(bytes: number): string {
   const formattedSize = parseFloat((bytes / Math.pow(k, i)).toFixed(2));
   return `${formattedSize} ${sizes[i]}`;
 }
+
+export function extractVideoId(url: string) {
+  const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+}

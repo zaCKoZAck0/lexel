@@ -16,12 +16,10 @@ import {
 import { Response } from '@/components/ai-elements/response';
 import { AIMessage } from '@/lib/types/ai-message';
 import { MessageActions } from './message-actions';
-import { ArrowUpIcon, Loader2 } from 'lucide-react';
+import { ArrowUpIcon } from 'lucide-react';
 import Image from 'next/image';
-import { ChatRequestOptions } from 'ai';
 import { ShinyText } from '@/components/ui/shiny-text';
 import { getRandomSubmittedMessage } from '@/lib/utils/ui-text';
-import { Button } from '@/components/ui/button';
 import WebSearchResults, { WebSearchPart } from './web-search-results';
 import {
   SearchMemoryUI,
@@ -29,6 +27,10 @@ import {
   SearchMemoryPart,
   AddMemoryPart,
 } from '@/components/ai-elements/tools/supermemory-ui';
+import {
+  ToolWatchYoutube,
+  WatchYoutubeUI,
+} from '@/components/ai-elements/tools/watch-youtube-ui';
 
 export function ConversationWindow({
   messages,
@@ -81,6 +83,13 @@ export function ConversationWindow({
                           className="mb-4"
                           key={`${message.id}-${i}`}
                           part={part as AddMemoryPart}
+                        />
+                      );
+                    case 'tool-watchYoutube':
+                      return (
+                        <WatchYoutubeUI
+                          key={`${message.id}-${i}`}
+                          part={part as ToolWatchYoutube}
                         />
                       );
                     case 'text':

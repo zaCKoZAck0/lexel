@@ -28,6 +28,8 @@ import { createMemoryTools } from '@/lib/tools/supermemory';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { convertToUIMessages } from '@/lib/utils/utils';
 import { webSearch } from '@/lib/tools/exa-web-search';
+import { watchYoutube } from '@/lib/tools/watch-youtube';
+import { DEFAULT_CHAT_TITLE, MAX_MESSAGES_CONTEXT } from '@/lib/config/server';
 
 // Allow streaming responses up to 60 seconds
 export const maxDuration = 60;
@@ -72,7 +74,7 @@ export async function POST(req: Request) {
 
     const [session, chat] = await Promise.all([
       auth(),
-      getChatByIdWithMessages(id),
+      getChatByIdWithMessages(id, MAX_MESSAGES_CONTEXT),
     ]);
 
     // Authentication - only logged-in users can access chat
@@ -95,7 +97,7 @@ export async function POST(req: Request) {
       const title =
         firstTextLikePart && firstTextLikePart.type === 'text'
           ? firstTextLikePart.text.slice(0, 80)
-          : '...';
+          : DEFAULT_CHAT_TITLE;
 
       const newChat = await createChat({
         userId: session.user.id,
@@ -165,9 +167,10 @@ export async function POST(req: Request) {
             }),
             searchMemories: memoryTools.searchMemories,
             addMemory: memoryTools.addMemory,
+            watchYoutube,
           },
           stopWhen: stepCountIs(5),
-          experimental_transform: smoothStream({ chunking: 'word' }),
+          experimental_transform: smoothStream({ chunking: 'line' }),
           providerOptions: getProviderOptions({
             isReasoning: model.isReasoning,
             effort: modelInfo.reasoningEffort,
