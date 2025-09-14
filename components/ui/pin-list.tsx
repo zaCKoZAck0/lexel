@@ -114,7 +114,7 @@ function PinList<T = PinListItem>({
                 pinnedSectionClassName,
               )}
             >
-              {pinned.map((item, index) => {
+              {pinned.map(item => {
                 const originalIndex = renderedItems.findIndex(
                   r => r.id === item.id,
                 );
@@ -186,7 +186,7 @@ function PinList<T = PinListItem>({
                 unpinnedSectionClassName,
               )}
             >
-              {unpinned.map((item, index) => {
+              {unpinned.map(item => {
                 const originalIndex = renderedItems.findIndex(
                   r => r.id === item.id,
                 );

@@ -95,7 +95,7 @@ function AssistantActions({
               <CopyIcon className="size-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Copy</TooltipContent>
+          <TooltipContent>Copy</TooltipContent>
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -107,7 +107,7 @@ function AssistantActions({
               <RefreshCcwIcon className="size-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Rewrite</TooltipContent>
+          <TooltipContent>Rewrite</TooltipContent>
         </Tooltip>
       </div>
       <div>
