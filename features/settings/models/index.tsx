@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { type DragEndEvent, type DragStartEvent } from '@dnd-kit/core';
-import { arrayMove } from '@dnd-kit/sortable';
 import { allModels, type Model } from '@/lib/models';
 import {
   getUserPreferencesQuery,
@@ -35,6 +33,7 @@ export function ModelsSettings({}: ModelsSettingsProps) {
   const updateMutation = useUpdatePreferencesMutation();
 
   const [favoriteModelIds, setFavoriteModelIds] = useState<string[]>([]);
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
 
   useEffect(() => {
     if (preferences?.favoriteModels) {
@@ -47,8 +46,6 @@ export function ModelsSettings({}: ModelsSettingsProps) {
       .map(id => allModels.find(m => m.id === id))
       .filter((m): m is Model => Boolean(m));
   }, [favoriteModelIds]);
-
-  const [activeId, setActiveId] = useState<string | null>(null);
 
   const availableModels = allModels.filter(
     model =>
@@ -89,21 +86,22 @@ export function ModelsSettings({}: ModelsSettingsProps) {
     persistFavorites(next);
   };
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
+  const moveModelUp = (index: number) => {
+    if (index > 0) {
+      const newIds = [...favoriteModelIds];
+      [newIds[index - 1], newIds[index]] = [newIds[index], newIds[index - 1]];
+      persistFavorites(newIds);
+      setFocusedIndex(index - 1);
+    }
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const oldIndex = favoriteModelIds.findIndex(id => id === active.id);
-      const newIndex = favoriteModelIds.findIndex(id => id === over.id);
-      const reordered = arrayMove(favoriteModelIds, oldIndex, newIndex);
-      persistFavorites(reordered);
+  const moveModelDown = (index: number) => {
+    if (index < favoriteModelIds.length - 1) {
+      const newIds = [...favoriteModelIds];
+      [newIds[index], newIds[index + 1]] = [newIds[index + 1], newIds[index]];
+      persistFavorites(newIds);
+      setFocusedIndex(index + 1);
     }
-
-    setActiveId(null);
   };
 
   if (isLoading || providersLoading) {
@@ -130,10 +128,11 @@ export function ModelsSettings({}: ModelsSettingsProps) {
 
         <FavoritesList
           favoriteModels={favoriteModels}
-          activeId={activeId}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
+          focusedIndex={focusedIndex}
+          onMoveUp={moveModelUp}
+          onMoveDown={moveModelDown}
           onRemove={id => removeFromFavorites(id)}
+          onFocusChange={setFocusedIndex}
         />
 
         <AvailableList

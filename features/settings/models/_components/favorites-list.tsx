@@ -8,58 +8,32 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import type { Model } from '@/lib/models';
-import {
-  DndContext,
-  closestCenter,
-  DragOverlay,
-  type DragEndEvent,
-  type DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import {
-  restrictToVerticalAxis,
-  restrictToParentElement,
-} from '@dnd-kit/modifiers';
-import { SortableFavoriteItem } from './sortable-favorite-item';
+import { FavoriteItem } from './favorite-item';
 
 interface FavoritesListProps {
   favoriteModels: Model[];
-  activeId: string | null;
-  onDragStart: (e: DragStartEvent) => void;
-  onDragEnd: (e: DragEndEvent) => void;
+  focusedIndex: number;
+  onMoveUp: (index: number) => void;
+  onMoveDown: (index: number) => void;
   onRemove: (modelId: string) => void;
+  onFocusChange: (index: number) => void;
 }
 
 export function FavoritesList({
   favoriteModels,
-  activeId,
-  onDragStart,
-  onDragEnd,
+  focusedIndex,
+  onMoveUp,
+  onMoveDown,
   onRemove,
+  onFocusChange,
 }: FavoritesListProps) {
-  // Configure sensors with proper activation constraints
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 10, // Require 10px movement before starting drag
-        tolerance: 5,
-        delay: 100,
-      },
-    }),
-  );
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Your favorite Models ({favoriteModels.length})</CardTitle>
         <CardDescription>
-          Reorder and manage the models shown in your selector.
+          Use arrow keys to reorder and manage the models shown in your
+          selector.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -73,53 +47,22 @@ export function FavoritesList({
             </div>
           </div>
         ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={onDragStart}
-            onDragEnd={onDragEnd}
-            // Apply modifiers to restrict movement
-            modifiers={[restrictToVerticalAxis]}
-          >
-            <SortableContext
-              items={favoriteModels.map(m => m.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-4">
-                {favoriteModels.map(model => (
-                  <SortableFavoriteItem
-                    key={model.id}
-                    model={model}
-                    onRemove={() => onRemove(model.id)}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-
-            <DragOverlay
-              // Critical: Disable scale adjustment and use proper modifiers
-              adjustScale={false}
-              modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-              style={{
-                transformOrigin: '0 0',
-              }}
-              dropAnimation={{
-                duration: 200,
-                easing: 'ease',
-              }}
-            >
-              {activeId ? (
-                <SortableFavoriteItem
-                  model={
-                    favoriteModels.find(m => m.id === activeId) ||
-                    favoriteModels[0]
-                  }
-                  onRemove={() => {}}
-                  dragOverlay
-                />
-              ) : null}
-            </DragOverlay>
-          </DndContext>
+          <div className="space-y-4">
+            {favoriteModels.map((model, index) => (
+              <FavoriteItem
+                key={model.id}
+                model={model}
+                index={index}
+                isFocused={focusedIndex === index}
+                canMoveUp={index > 0}
+                canMoveDown={index < favoriteModels.length - 1}
+                onMoveUp={() => onMoveUp(index)}
+                onMoveDown={() => onMoveDown(index)}
+                onRemove={() => onRemove(model.id)}
+                onFocus={() => onFocusChange(index)}
+              />
+            ))}
+          </div>
         )}
       </CardContent>
     </Card>
