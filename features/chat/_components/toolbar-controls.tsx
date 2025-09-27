@@ -2,7 +2,7 @@
 
 import { BrainIcon, GlobeIcon, LightbulbIcon } from 'lucide-react';
 import { Model } from '@/lib/models';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -107,7 +107,16 @@ export function ToolbarControls({
             value={modelInfo.reasoningEffort}
             onValueChange={handleReasoningEffortChange}
           >
-            <SelectTrigger className={cn('h-fit py-0 rounded-full text-sm')}>
+            <SelectTrigger
+              size="sm"
+              className={cn(
+                buttonVariants({
+                  variant: 'outline',
+                  size: 'xs',
+                }),
+                'rounded-full !h-7 !border-border',
+              )}
+            >
               <BrainIcon className="w-4 h-4" />
               <SelectValue placeholder="Reasoning Effort" />
             </SelectTrigger>

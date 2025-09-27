@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Search, Pin, ChevronUp, ChevronDown } from 'lucide-react';
 import { AvailableProviders } from './_components/available-providers';
 import { ModelDetails } from './_components/model-details';
+import Link from 'next/link';
 
 interface ModelsSettingsProps {}
 
@@ -237,10 +238,12 @@ export function ModelsSettings({}: ModelsSettingsProps) {
                   {searchQuery ? (
                     <>No models found matching "{searchQuery}"</>
                   ) : availableProviders.length === 0 ? (
-                    <>
-                      No models available. Add API keys in settings to see
-                      models.
-                    </>
+                    <div className="space-y-4">
+                      <p>Add API keys in settings to see models.</p>
+                      <Link href="/settings/api-keys">
+                        <Button variant="outline">Add API keys</Button>
+                      </Link>
+                    </div>
                   ) : (
                     <>No models available from configured providers.</>
                   )}

@@ -6,7 +6,7 @@ export const gatewayModels: Model[] = [
     id: 'gateway:v0-1.5-md',
     name: 'v0-1.5-md',
     description:
-      'Optimized for frontend and full-stack web development, built by the Vercel team for v0.',
+      'Fine-tuned for everyday UI and code generation on Next.js/React projects, the same model behind v0.',
     provider: 'gateway',
     isReasoning: true,
     modalities: ['image', 'text'],
@@ -119,6 +119,8 @@ export const gatewayModels: Model[] = [
   {
     id: 'gateway:openai/o3',
     name: 'OpenAI o3',
+    description:
+      'Excels at step-by-step logic, advanced coding, and multimodal problem-solving, great for tasks requiring deep analysis.',
     provider: 'gateway',
     actualProvider: 'openai',
     isReasoning: true,
@@ -183,6 +185,8 @@ export const gatewayModels: Model[] = [
   {
     id: 'gateway:groq/gpt-oss-20b',
     name: 'gpt-oss-20b',
+    description:
+      "OpenAI's fully open, 20B-parameter reasoning model with strong coding and function-calling skills.",
     provider: 'gateway',
     actualProvider: 'openai',
     isReasoning: true,
@@ -266,6 +270,8 @@ export const gatewayModels: Model[] = [
   {
     id: 'gateway:anthropic/claude-opus-4.1',
     name: 'Claude 4.1 Opus',
+    description:
+      'Best for advanced coding, deep research and creative writing, but can be expensive.',
     provider: 'gateway',
     actualProvider: 'anthropic',
     isReasoning: true,
@@ -343,6 +349,114 @@ export const gatewayModels: Model[] = [
     priceInUSD: {
       input: 0.59,
       output: 0.79,
+      per: '1M tokens',
+    },
+  },
+
+  // ------------------xai models------------------
+  {
+    id: 'gateway:xai/grok-4',
+    name: 'Grok 4',
+    description: '',
+    actualProvider: 'xai',
+    provider: 'gateway',
+    isReasoning: true,
+    modalities: ['image', 'text'],
+    features: [],
+    modelType: 'chat',
+    contextWindow: 256_000,
+    priceInUSD: {
+      input: 3,
+      output: 15,
+      per: '1M tokens',
+    },
+  },
+  {
+    id: 'gateway:xai/grok-3-mini',
+    name: 'Grok 3 mini',
+    description: '',
+    actualProvider: 'xai',
+    provider: 'gateway',
+    isReasoning: true,
+    modalities: ['image', 'text'],
+    features: [],
+    modelType: 'chat',
+    contextWindow: 131_000,
+    priceInUSD: {
+      input: 0.3,
+      output: 0.5,
+      per: '1M tokens',
+    },
+  },
+  {
+    id: 'gateway:xai/grok-code-fast-1',
+    name: 'grok-code-fast-1',
+    description: '',
+    actualProvider: 'xai',
+    provider: 'gateway',
+    isReasoning: true,
+    modalities: ['image', 'text'],
+    features: [],
+    modelType: 'chat',
+    contextWindow: 131_000,
+    priceInUSD: {
+      input: 0.2,
+      output: 1.5,
+      per: '1M tokens',
+    },
+  },
+  {
+    id: 'gateway:xai/grok-3',
+    name: 'Grok 3',
+    description: '',
+    actualProvider: 'xai',
+    provider: 'gateway',
+    isReasoning: true,
+    modalities: ['image', 'text'],
+    features: [],
+    modelType: 'chat',
+    contextWindow: 131_000,
+    priceInUSD: {
+      input: 3,
+      output: 15,
+      per: '1M tokens',
+    },
+  },
+
+  // ------------------ zai models------------------
+
+  {
+    id: 'gateway:zai/glm-4.5',
+    name: 'GLM 4.5',
+    description:
+      'Open-source coding powehouse, go-to for developers who want top-tier code generation without the hefty Anthropic bill.',
+    actualProvider: 'zai',
+    provider: 'gateway',
+    isReasoning: true,
+    modalities: ['image', 'text'],
+    features: [],
+    modelType: 'chat',
+    contextWindow: 128_000,
+    priceInUSD: {
+      input: 0.6,
+      output: 2.2,
+      per: '1M tokens',
+    },
+  },
+
+  {
+    id: 'gateway:zai/glm-4.5-air',
+    name: 'GLM 4.5 Air',
+    actualProvider: 'zai',
+    provider: 'gateway',
+    isReasoning: true,
+    modalities: ['image', 'text'],
+    features: [],
+    modelType: 'chat',
+    contextWindow: 128_000,
+    priceInUSD: {
+      input: 0.2,
+      output: 1.1,
       per: '1M tokens',
     },
   },

@@ -1,15 +1,9 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { TooltipButton } from '@/components/ui/tooltip-button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils/utils';
-import {
-  CheckIcon,
-  CopyIcon,
-  DownloadIcon,
-  WrapTextIcon,
-  UnfoldHorizontalIcon,
-} from 'lucide-react';
+import { DownloadIcon, WrapTextIcon, TextIcon } from 'lucide-react';
 import type { ComponentProps, HTMLAttributes, ReactNode } from 'react';
 import {
   createContext,
@@ -23,6 +17,7 @@ import {
   coldarkCold,
   coldarkDark,
 } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { CopyButton } from '../ui/copy-button';
 
 type CodeBlockContextType = {
   code: string;
@@ -143,14 +138,14 @@ export const CodeBlock = ({
       >
         {/* Floating header elements */}
         <div
-          className={`${FLOATING_HEADER_STYLES} flex justify-between items-center w-full p-2`}
+          className={`${FLOATING_HEADER_STYLES} flex justify-between items-center w-full py-1.5 px-3 bg-muted/15 border-b backdrop-blur-sm`}
         >
           <div
-            className={`inline-flex items-center h-6 px-2 py-1 ${BACKDROP_STYLES} text-sm font-medium text-muted-foreground rounded-tr-0 rounded-bl-0`}
+            className={`text-sm font-mono font-medium text-muted-foreground`}
           >
             {language}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <CodeBlockWrapButton />
             <CodeBlockDownloadButton />
             <CodeBlockCopyButton />
@@ -230,7 +225,10 @@ export const CodeBlock = ({
   );
 };
 
-export type CodeBlockCopyButtonProps = ComponentProps<typeof Button> & {
+export type CodeBlockCopyButtonProps = Omit<
+  ComponentProps<typeof TooltipButton>,
+  'tooltipContent'
+> & {
   onCopy?: () => void;
   onError?: (error: Error) => void;
   timeout?: number;
@@ -244,46 +242,23 @@ export const CodeBlockCopyButton = ({
   className,
   ...props
 }: CodeBlockCopyButtonProps) => {
-  const [isCopied, setIsCopied] = useState(false);
   const { code } = useContext(CodeBlockContext);
 
-  const copyToClipboard = useCallback(async () => {
-    if (typeof window === 'undefined' || !navigator.clipboard.writeText) {
-      const error = new Error('Clipboard API not available');
-      onError?.(error);
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(code);
-      setIsCopied(true);
-      onCopy?.();
-      setTimeout(() => setIsCopied(false), timeout);
-    } catch (error) {
-      console.warn('Failed to copy code to clipboard:', error);
-      onError?.(error as Error);
-    }
-  }, [code, onCopy, onError, timeout]);
-
-  const Icon = isCopied ? CheckIcon : CopyIcon;
-
   return (
-    <Button
+    <CopyButton
+      tooltipText={'Copy'}
       className={cn(`h-7 w-7 ${BUTTON_STYLES}`, className)}
-      onClick={copyToClipboard}
+      text={code}
       size="icon"
       variant="ghost"
-      aria-label={
-        isCopied ? 'Code copied to clipboard' : 'Copy code to clipboard'
-      }
-      {...props}
-    >
-      {children ?? <Icon size={14} />}
-    </Button>
+    />
   );
 };
 
-export type CodeBlockDownloadButtonProps = ComponentProps<typeof Button> & {
+export type CodeBlockDownloadButtonProps = Omit<
+  ComponentProps<typeof TooltipButton>,
+  'tooltipContent'
+> & {
   filename?: string;
   onDownload?: () => void;
   onError?: (error: Error) => void;
@@ -322,20 +297,23 @@ export const CodeBlockDownloadButton = ({
   }, [code, filename, language, onDownload, onError]);
 
   return (
-    <Button
+    <TooltipButton
+      tooltipContent="Download code"
       className={cn(`h-7 w-7 ${BUTTON_STYLES}`, className)}
       onClick={downloadCode}
       size="icon"
       variant="ghost"
-      aria-label="Download code as file"
       {...props}
     >
       {children ?? <DownloadIcon size={14} />}
-    </Button>
+    </TooltipButton>
   );
 };
 
-export type CodeBlockWrapButtonProps = ComponentProps<typeof Button> & {
+export type CodeBlockWrapButtonProps = Omit<
+  ComponentProps<typeof TooltipButton>,
+  'tooltipContent'
+> & {
   onToggle?: (wrapped: boolean) => void;
 };
 
@@ -353,18 +331,20 @@ export const CodeBlockWrapButton = ({
     onToggle?.(newWrapped);
   };
 
-  const Icon = isWrapped ? UnfoldHorizontalIcon : WrapTextIcon;
+  const Icon = isWrapped ? WrapTextIcon : TextIcon;
 
   return (
-    <Button
+    <TooltipButton
+      tooltipContent={
+        isWrapped ? 'Disable text wrapping' : 'Enable text wrapping'
+      }
       className={cn(`h-7 w-7 ${BUTTON_STYLES}`, className)}
       onClick={toggleWrap}
       size="icon"
       variant="ghost"
-      aria-label={isWrapped ? 'Unwrap code lines' : 'Wrap code lines'}
       {...props}
     >
       {children ?? <Icon size={14} />}
-    </Button>
+    </TooltipButton>
   );
 };

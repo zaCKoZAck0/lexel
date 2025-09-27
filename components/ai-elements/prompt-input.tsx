@@ -58,7 +58,7 @@ export const PromptInputTextarea = ({
   return (
     <Textarea
       className={cn(
-        'w-full resize-none rounded-none border-none p-3 shadow-none outline-none ring-0',
+        'w-full placeholder:text-lg !text-lg !h-fit resize-none rounded-none border-none p-3 shadow-none outline-none ring-0',
         'field-sizing-content max-h-[6lh] bg-transparent dark:bg-transparent',
         'focus-visible:ring-0',
         className,
@@ -81,7 +81,7 @@ export const PromptInputToolbar = ({
   ...props
 }: PromptInputToolbarProps) => (
   <div
-    className={cn('flex items-center justify-between p-1', className)}
+    className={cn('flex items-center justify-between p-1 pl-2', className)}
     {...props}
   />
 );
@@ -94,7 +94,7 @@ export const PromptInputTools = ({
 }: PromptInputToolsProps) => (
   <div
     className={cn(
-      'flex items-center gap-1',
+      'flex items-center gap-1.5',
       '[&_button:first-child]:rounded-bl-xl',
       className,
     )}

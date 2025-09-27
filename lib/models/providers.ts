@@ -9,6 +9,9 @@ import {
   DeepSeekIcon,
   VercelIcon,
   MetaIcon,
+  XaiIcon,
+  QwenIcon,
+  ZaiIcon,
 } from '@/components/icons/provider-icons';
 
 export type ProviderId =
@@ -17,11 +20,12 @@ export type ProviderId =
   | 'anthropic'
   | 'deepseek'
   | 'gateway'
-  | 'meta';
-// | 'qwen'
-// | 'xai';
+  | 'meta'
+  | 'qwen'
+  | 'xai'
+  | 'zai';
 
-export type NonKeyProviderId = 'meta';
+export type NonKeyProviderId = 'meta' | 'qwen';
 
 // Add new providers here and their inferred union type will update automatically.
 export interface ProviderConfig {
@@ -96,29 +100,38 @@ export const AI_PROVIDERS: ProviderConfig[] = [
     keyPortal: 'https://vercel.com/account/tokens',
     keyPattern: /^vck_[A-Za-z0-9_\-]{40,}$/,
   },
-  // {
-  //   id: 'qwen',
-  //   name: 'Qwen',
-  //   Icon: QwenIcon,
-  //   keyFormat: 'sk-...',
-  //   documentation: 'https://help.aliyun.com/en/qwen',
-  //   keyPortal: 'https://bailian.console.aliyun.com/?apiKey=1#/api-key',
-  // },
-  // {
-  //   id: 'xai',
-  //   name: 'XAI',
-  //   Icon: XaiIcon,
-  //   keyFormat: 'sk-...',
-  //   documentation: 'https://xai.com/docs',
-  //   keyPortal: 'https://console.x.ai/',
-  //   keyPattern: /^xai-sk-[A-Za-z0-9_-]{10,}$/,
-  // },
+  {
+    id: 'xai',
+    name: 'xAI',
+    Icon: XaiIcon,
+    keyFormat: 'sk-...',
+    documentation: 'https://xai.com/docs',
+    keyPortal: 'https://console.x.ai/',
+    keyPattern: /^xai-sk-[A-Za-z0-9_-]{10,}$/,
+  },
+  {
+    id: 'zai',
+    name: 'z.ai',
+    Icon: ZaiIcon,
+    keyFormat: 'sk-...',
+    documentation: 'https://zai.com/docs',
+    keyPortal: 'https://console.z.ai/',
+    keyPattern: /^zai-sk-[A-Za-z0-9_-]{10,}$/,
+  },
 
   // -------- Non-key providers --------
   {
     id: 'meta',
     name: 'Meta',
     Icon: MetaIcon,
+    keyFormat: '',
+    enabled: false,
+    documentation: '',
+  },
+  {
+    id: 'qwen',
+    name: 'Qwen',
+    Icon: QwenIcon,
     keyFormat: '',
     enabled: false,
     documentation: '',

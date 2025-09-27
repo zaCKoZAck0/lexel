@@ -42,6 +42,7 @@ import { ApiRequestError } from '@/lib/api/client';
 
 export function AddApiKeyDialog({ disabled = false }: { disabled?: boolean }) {
   const [newKeyValue, setNewKeyValue] = useState('');
+  const [newKeyName, setNewKeyName] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const queryClient = useQueryClient();
@@ -98,12 +99,14 @@ export function AddApiKeyDialog({ disabled = false }: { disabled?: boolean }) {
     const keyData: CreateApiKeyInput = {
       provider: selectedProvider,
       key: newKeyValue.trim(),
+      name: newKeyName.trim() || undefined,
       default: false,
     };
 
     try {
       await createMutation.mutateAsync(keyData);
       setNewKeyValue('');
+      setNewKeyName('');
       setSelectedProvider('');
       setShowAddDialog(false);
     } catch {}
@@ -168,6 +171,15 @@ export function AddApiKeyDialog({ disabled = false }: { disabled?: boolean }) {
                 )}
               </div>
             )}
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="api-key-name">Name (optional)</Label>
+            <Input
+              id="api-key-name"
+              placeholder="e.g., Personal, Work, Project Name"
+              value={newKeyName}
+              onChange={e => setNewKeyName(e.target.value)}
+            />
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="api-key">API Key</Label>

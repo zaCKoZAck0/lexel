@@ -34,6 +34,8 @@ export function Chat({
     thinkingEnabled: false,
     webSearchEnabled: false,
   });
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
 
   useEffect(() => {
     console.log('modelInfo', modelInfo);
@@ -60,11 +62,14 @@ export function Chat({
     transport: new DefaultChatTransport({
       api: '/api/chat',
       prepareSendMessagesRequest: ({ messages, body }) => {
+        const trigger = body?.trigger || 'message-send';
+        const lastMessage = messages.at(-1);
+
         return {
           body: {
             id: chatId,
-            trigger: 'message-send',
-            message: messages.at(-1),
+            trigger,
+            message: body?.message || lastMessage,
             ...body,
           },
         };
@@ -98,6 +103,59 @@ export function Chat({
         },
       });
     }
+  };
+
+  const editMessage = (messageId: string) => {
+    const message = messages.find(m => m.id === messageId);
+    if (message && message.role === 'user') {
+      const textPart = message.parts.find(part => part.type === 'text');
+      if (textPart && textPart.type === 'text') {
+        setEditingMessageId(messageId);
+        setEditText(textPart.text);
+      }
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingMessageId(null);
+    setEditText('');
+  };
+
+  const saveEdit = () => {
+    if (!editingMessageId || !editText.trim()) return;
+
+    // Find the message index
+    const messageIndex = messages.findIndex(m => m.id === editingMessageId);
+    if (messageIndex === -1) return;
+
+    // Create new message with edited text
+    const editedMessage: AIMessage = {
+      ...messages[messageIndex],
+      parts: [{ type: 'text', text: editText.trim() }],
+    };
+
+    // Remove messages from the edited one onwards
+    const messagesToKeep = messages.slice(0, messageIndex);
+    setMessages(messagesToKeep);
+
+    // Send the edited message using the transport's custom body preparation
+    sendMessage(
+      { text: editText.trim() },
+      {
+        body: {
+          trigger: 'message-edit',
+          message: editedMessage,
+          modelInfo: modelInfo,
+          userInfo: {
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
+        },
+      },
+    );
+
+    // Clear edit state
+    setEditingMessageId(null);
+    setEditText('');
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -135,6 +193,15 @@ export function Chat({
             selectedModelId={modelInfo.modelId}
             chatId={chatId}
             rewrite={rewrite}
+            editMessage={editMessage}
+            editingMessageId={editingMessageId}
+            editText={editText}
+            setEditText={setEditText}
+            cancelEdit={cancelEdit}
+            saveEdit={saveEdit}
+            modelInfo={modelInfo}
+            setModelInfo={setModelInfo}
+            favoriteModels={favoriteModels}
           />
         </div>
         {/* Spacer for bottom positioning */}

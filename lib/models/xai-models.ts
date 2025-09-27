@@ -1,0 +1,68 @@
+import { Model } from '.';
+
+export const xaiModels: Model[] = [
+  {
+    id: 'xai:grok-4',
+    name: 'Grok 4',
+    description: '',
+    provider: 'xai',
+    isReasoning: true,
+    modalities: ['image', 'text'],
+    features: [],
+    modelType: 'chat',
+    contextWindow: 256_000,
+    priceInUSD: {
+      input: 3,
+      output: 15,
+      per: '1M tokens',
+    },
+  },
+  {
+    id: 'xai:grok-3-mini',
+    name: 'Grok 3 mini',
+    description: '',
+    provider: 'xai',
+    isReasoning: true,
+    modalities: ['image', 'text'],
+    features: [],
+    modelType: 'chat',
+    contextWindow: 131_000,
+    priceInUSD: {
+      input: 0.3,
+      output: 0.5,
+      per: '1M tokens',
+    },
+  },
+  {
+    id: 'xai:grok-code-fast-1',
+    name: 'grok-code-fast-1',
+    description: '',
+    provider: 'xai',
+    isReasoning: true,
+    modalities: ['image', 'text'],
+    features: [],
+    modelType: 'chat',
+    contextWindow: 131_000,
+    priceInUSD: {
+      input: 0.2,
+      output: 1.5,
+      per: '1M tokens',
+    },
+  },
+  {
+    id: 'xai:grok-3',
+    name: 'Grok 3',
+    description: '',
+    provider: 'xai',
+    isReasoning: true,
+    modalities: ['image', 'text'],
+    features: [],
+    modelType: 'chat',
+    contextWindow: 131_000,
+    priceInUSD: {
+      input: 3,
+      output: 15,
+      per: '1M tokens',
+    },
+  },
+];

@@ -3,6 +3,7 @@ import { ProviderId } from './providers';
 import { OpenAiModels } from './openai-models';
 import { gatewayModels } from './gateway-models';
 import { anthropicModels } from './anthropic-models';
+import { xaiModels } from './xai-models';
 
 type Modality = 'text' | 'image' | 'video';
 type Features = 'tool-calling' | 'effort-control' | 'fast' | 'open-source';
@@ -41,6 +42,7 @@ export const allModels: Model[] = [
   ...OpenAiModels,
   ...gatewayModels,
   ...anthropicModels,
+  ...xaiModels,
 ];
 
 export function getModelDetails(modelId: string) {

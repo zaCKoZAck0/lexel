@@ -6,6 +6,7 @@ export const keySchema = z
   .object({
     provider: z.string().min(1, 'Provider is required'),
     key: z.string().min(1, 'API key is required'),
+    name: z.string().optional(),
     default: z.boolean().optional().default(false),
   })
   .superRefine((data, ctx) => {
@@ -45,6 +46,7 @@ export const updateKeySchema = z
   .object({
     provider: z.string().optional(),
     key: z.string().optional(),
+    name: z.string().optional(),
     default: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {

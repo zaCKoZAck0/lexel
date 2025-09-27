@@ -22,8 +22,8 @@ function TooltipProvider({ openDelay = 0, ...props }: TooltipProviderProps) {
 
 type TooltipProps = TooltipPrimitiveProps;
 
-function Tooltip({ sideOffset = 10, ...props }: TooltipProps) {
-  return <TooltipPrimitive sideOffset={sideOffset} {...props} />;
+function Tooltip({ side = 'top', sideOffset = 10, ...props }: TooltipProps) {
+  return <TooltipPrimitive side={side} sideOffset={sideOffset} {...props} />;
 }
 
 type TooltipTriggerProps = TooltipTriggerPrimitiveProps;
@@ -35,6 +35,7 @@ function TooltipTrigger({ ...props }: TooltipTriggerProps) {
 type TooltipContentProps = Omit<TooltipContentPrimitiveProps, 'asChild'> & {
   children: React.ReactNode;
   layout?: boolean | 'position' | 'size' | 'preserve-aspect';
+  arrowStyle?: string;
 };
 
 function TooltipContent({
@@ -55,7 +56,10 @@ function TooltipContent({
         <motion.div layout={layout}>{children}</motion.div>
       </motion.div>
       <TooltipArrowPrimitive
-        className="fill-primary size-3 data-[side='bottom']:translate-y-[1px] data-[side='right']:translate-x-[1px] data-[side='left']:translate-x-[-1px] data-[side='top']:translate-y-[-1px]"
+        className={cn(
+          "fill-primary size-3 data-[side='bottom']:translate-y-[1px] data-[side='right']:translate-x-[1px] data-[side='left']:translate-x-[-1px] data-[side='top']:translate-y-[-1px]",
+          props.arrowStyle,
+        )}
         tipRadius={2}
       />
     </TooltipContentPrimitive>
