@@ -20,6 +20,8 @@ export const anthropicModels: Model[] = [
   {
     id: 'anthropic:claude-opus-4.1',
     name: 'Claude 4.1 Opus',
+    description:
+      'Claude Opus 4.1 is a drop-in replacement for Opus 4 that delivers superior performance and precision for real-world coding and agentic tasks. Opus 4.1 advances state-of-the-art coding performance to 74.5% on SWE-bench Verified, and handles complex, multi-step problems with more rigor and attention to detail.',
     provider: 'anthropic',
     isReasoning: true,
     hybridReasoning: true,

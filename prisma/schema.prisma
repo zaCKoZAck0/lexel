@@ -95,6 +95,7 @@ model ApiKeys {
   id        String   @id @default(cuid())
   userId    String
   provider  String
+  name      String? // custom name for the API key
   default   Boolean  @default(false)
   encrypted String
   iv        String
@@ -120,7 +121,6 @@ model Chat {
 model Message {
   id             String   @id @default(cuid())
   chatId         String
-  modelId        String
   role           String
   parts          Json
   metadata       Json     @default("{}")

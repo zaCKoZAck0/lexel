@@ -19,6 +19,7 @@ export const OpenAiModels: Model[] = [
   {
     id: 'openai:gpt-4o',
     name: 'GPT-4o',
+    description: 'Ideal for fast, high-quality conversations.',
     provider: 'openai',
     isReasoning: false,
     modalities: ['text', 'image'],
@@ -94,6 +95,8 @@ export const OpenAiModels: Model[] = [
   {
     id: 'openai:gpt-4.1-nano',
     name: 'GPT-4.1 nano',
+    description:
+      'Lightning-fast chat model that is affordable, perfect for quick answers, code snippets and everyday guidance.',
     provider: 'openai',
     isReasoning: false,
     modalities: ['text', 'image'],
@@ -109,6 +112,8 @@ export const OpenAiModels: Model[] = [
   {
     id: 'openai:o3',
     name: 'OpenAI o3',
+    description:
+      "OpenAI's o3 is their most powerful reasoning model, setting new state-of-the-art benchmarks in coding, math, science, and visual perception. It excels at complex queries requiring multi-faceted analysis, with particular strength in analyzing images, charts, and graphics.",
     provider: 'openai',
     isReasoning: true,
     modalities: ['text', 'image'],

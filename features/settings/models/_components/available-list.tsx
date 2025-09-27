@@ -13,6 +13,7 @@ import type { Model } from '@/lib/models';
 import { getProviderInfo } from '@/lib/models/providers';
 import { Search, Plus } from 'lucide-react';
 import { ModelDetails } from './model-details';
+import Link from 'next/link';
 
 interface AvailableListProps {
   modelsByProvider: Record<string, Model[]>;
@@ -87,7 +88,12 @@ export function AvailableList({
             {searchQuery ? (
               <>No models found matching "{searchQuery}"</>
             ) : availableProviders.length === 0 ? (
-              <>No models available. Add API keys in settings to see models.</>
+              <div className="space-y-2">
+                <p>Add API keys in settings to see models.</p>
+                <Link href="/settings/api-keys">
+                  <Button variant="link">Add API keys</Button>
+                </Link>
+              </div>
             ) : (
               <>No models available from configured providers.</>
             )}

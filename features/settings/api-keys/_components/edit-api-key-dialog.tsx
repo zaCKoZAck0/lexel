@@ -54,6 +54,7 @@ export function EditApiKeyDialog({
   const [open, setOpen] = useState(false);
   const [provider, setProvider] = useState(apiKey.provider);
   const [keyValue, setKeyValue] = useState(apiKey.key);
+  const [keyName, setKeyName] = useState(apiKey.name || '');
   const queryClient = useQueryClient();
   const [showKey, setShowKey] = useState(false);
 
@@ -76,6 +77,7 @@ export function EditApiKeyDialog({
               ...k,
               provider: data.provider ?? k.provider,
               key: data.key ?? k.key,
+              name: data.name !== undefined ? data.name : k.name,
               updatedAt: new Date() as any,
             };
           }),
@@ -112,8 +114,12 @@ export function EditApiKeyDialog({
     const payload: UpdateApiKeyInput = {
       key: keyValue.trim() !== apiKey.key ? keyValue.trim() : undefined,
       provider: provider !== apiKey.provider ? provider : undefined,
+      name:
+        keyName.trim() !== (apiKey.name || '')
+          ? keyName.trim() || undefined
+          : undefined,
     };
-    if (!payload.key && !payload.provider) {
+    if (!payload.key && !payload.provider && payload.name === undefined) {
       // Nothing changed
       setOpen(false);
       return;
@@ -186,6 +192,15 @@ export function EditApiKeyDialog({
                 )}
               </div>
             )}
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="api-key-name-edit">Name (optional)</Label>
+            <Input
+              id="api-key-name-edit"
+              placeholder="e.g., Personal, Work, Project Name"
+              value={keyName}
+              onChange={e => setKeyName(e.target.value)}
+            />
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="api-key-edit">API Key</Label>

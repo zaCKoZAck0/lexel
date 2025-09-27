@@ -31,25 +31,6 @@ export function AvailableProviders({
     }
   };
 
-  if (availableProviders.length === 0) {
-    return (
-      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border-l-4 border-l-orange-500">
-        <div className="flex items-center gap-3">
-          <Settings className="h-5 w-5 text-orange-600" />
-          <div>
-            <p className="font-medium text-sm">No providers configured</p>
-            <p className="text-xs text-muted-foreground">
-              Add API keys to access AI models
-            </p>
-          </div>
-        </div>
-        <Button asChild size="sm" variant="outline">
-          <Link href="/settings/api-keys">Configure</Link>
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-3 px-1">
       {/* Header with provider count and manage button */}

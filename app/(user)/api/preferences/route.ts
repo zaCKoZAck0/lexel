@@ -34,11 +34,13 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
     const parsed = userPreferencesUpdateSchema.parse(body);
+    console.log(parsed);
     const updated = await userPrefService.update(session.user.id, {
       favoriteModels: parsed.favoriteModels,
     });
     return ok(updated);
   } catch (err) {
+    console.error('[API_ERROR]', err);
     if (isAppError(err)) return fail(err.message, err.status);
     if (err instanceof Error && err.name === 'ZodError')
       return fail('Invalid input', 400, err);

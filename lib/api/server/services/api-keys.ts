@@ -12,6 +12,7 @@ export interface DecryptedApiKey {
   provider: string;
   default: boolean;
   key: string; // plaintext (decrypted) key
+  name?: string; // custom name for the API key
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +22,7 @@ interface CreateApiKeyInput {
   userId: string;
   provider: string;
   key: string; // plaintext provided by user
+  name?: string; // custom name for the API key
   default?: boolean;
 }
 
@@ -28,6 +30,7 @@ interface CreateApiKeyInput {
 interface UpdateApiKeyInput {
   provider?: string;
   key?: string; // new plaintext key
+  name?: string; // custom name for the API key
   default?: boolean;
 }
 
@@ -38,6 +41,7 @@ async function mapAndDecrypt(record: ApiKeys): Promise<DecryptedApiKey> {
     provider: record.provider,
     default: record.default,
     key: await decrypt(record.encrypted, record.iv),
+    name: record.name || undefined,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   };
@@ -72,6 +76,7 @@ export async function create(
     data: {
       userId: data.userId,
       provider: data.provider,
+      name: data.name,
       default: makeDefault,
       encrypted,
       iv,
@@ -297,6 +302,7 @@ export async function updateById(
     where: { id },
     data: {
       provider: data.provider ?? existingKey.provider,
+      name: data.name !== undefined ? data.name : existingKey.name,
       default:
         typeof data.default === 'boolean' ? data.default : existingKey.default,
       ...encryptedUpdate,

@@ -14,12 +14,7 @@ import {
 } from '@/components/ui/tooltip';
 import { getProviderInfo } from '@/lib/models/providers';
 
-export function MessageMetadata({
-  message,
-}: {
-  message: AIMessage;
-  rewrite: (messageId: string) => void;
-}) {
+export function MessageMetadata({ message }: { message: AIMessage }) {
   const totalTokens = message.metadata?.totalTokens;
   const tokensPerSecond =
     totalTokens &&

@@ -56,7 +56,7 @@ interface CreateMessageInput {
   messageId: string;
   role: string;
   parts: UIMessagePart<UIDataTypes, UITools>[];
-  modelId: string;
+  metadata?: InputJsonValue;
   attachmentUrls?: string[];
 }
 
@@ -269,7 +269,7 @@ export async function addMessage(
         chatId: data.chatId,
         role: data.role,
         parts: data.parts as InputJsonValue,
-        modelId: data.modelId,
+        metadata: data.metadata || {},
         attachmentUrls: data.attachmentUrls || [],
       },
     });
@@ -319,7 +319,6 @@ export async function saveMessages(data: SaveMessagesInput): Promise<void> {
       data: data.messages.map(message => ({
         id: message.id,
         chatId: message.chatId,
-        modelId: message.modelId,
         role: message.role,
         parts: message.parts as InputJsonValue,
         createdAt: message.createdAt,
@@ -359,6 +358,32 @@ export async function deleteMessages(messageIds: string[]): Promise<void> {
     }
     console.error(error);
     throw new AppError('Failed to delete messages', 500);
+  }
+}
+
+/**
+ * Update chat message
+ */
+export async function updateChatMessage(
+  message: Omit<MessageDTO, 'createdAt' | 'chatId' | 'role'>,
+): Promise<MessageDTO> {
+  try {
+    const result = await prisma.message.update({
+      where: { id: message.id },
+      data: {
+        parts: message.parts as InputJsonValue,
+        metadata: message.metadata as InputJsonValue,
+        attachmentUrls: message.attachmentUrls,
+      },
+    });
+
+    return result;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    console.error(error);
+    throw new AppError('Failed to update chat message', 500);
   }
 }
 

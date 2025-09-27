@@ -46,7 +46,7 @@ interface RequestBody {
     reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high';
     thinkingEnabled?: boolean;
   };
-  trigger: 'message-send' | 'message-rewrite';
+  trigger: 'message-send' | 'message-rewrite' | 'message-edit';
 }
 
 export async function POST(req: Request) {
@@ -72,10 +72,7 @@ export async function POST(req: Request) {
 
     const provider = model.provider;
 
-    const [session, chat] = await Promise.all([
-      auth(),
-      getChatByIdWithMessages(id, MAX_MESSAGES_CONTEXT),
-    ]);
+    const session = await auth();
 
     // Authentication - only logged-in users can access chat
     if (!session?.user?.id) {
@@ -84,13 +81,16 @@ export async function POST(req: Request) {
 
     const userId = session.user.id;
 
-    if (chat && chat.userId !== userId) {
+    let chatWithMessages = await getChatByIdWithMessages(
+      id,
+      MAX_MESSAGES_CONTEXT,
+    );
+
+    if (chatWithMessages && chatWithMessages.userId !== userId) {
       return fail('Chat not found', 404);
     }
 
-    let chatWithMessages = chat;
-
-    if (!chat) {
+    if (!chatWithMessages) {
       const firstTextLikePart = message.parts.find(
         part => part.type === 'text',
       );
@@ -117,36 +117,60 @@ export async function POST(req: Request) {
 
     let messageIdsToDelete: string[] = [];
 
-    if (trigger === 'message-rewrite') {
-      const messageIds = chat?.messages.map(message => message.id);
+    if (trigger === 'message-rewrite' || trigger === 'message-edit') {
+      const messageIds = chatWithMessages?.messages.map(message => message.id);
       const messageIndex = messageIds?.indexOf(message.id);
+
       if (!messageIds || messageIndex === undefined || messageIndex === -1) {
-        return fail('No messages to rewrite', 400);
+        const action = trigger === 'message-rewrite' ? 'rewrite' : 'edit';
+        return fail(`No messages to ${action}`, 400);
       }
-      messageIdsToDelete = messageIds.slice(messageIndex + 1);
+
+      if (trigger === 'message-edit' && message.role !== 'user') {
+        return fail('Only user messages can be edited', 400);
+      }
+
+      // For rewrite and edit: delete messages including the current one
+      const sliceIndex = messageIndex;
+      messageIdsToDelete = messageIds.slice(sliceIndex);
     }
 
-    if (trigger === 'message-send') {
-      await saveMessages({
-        messages: [
-          {
-            chatId: id,
-            role: 'user',
-            parts: message.parts as JsonValue,
-            metadata: message.metadata as JsonValue,
-            id: message.id,
-            modelId: 'N/A',
-            attachmentUrls: [],
-            createdAt: new Date(),
-          },
-        ],
-      });
+    // Create a shared modelInfo snapshot and helper for composing metadata consistently
+    const effectiveModelInfo = {
+      ...model,
+      webSearchEnabled: modelInfo.webSearchEnabled,
+      reasoningEffort: modelInfo.reasoningEffort,
+      thinkingEnabled: modelInfo.thinkingEnabled,
+    };
+
+    const composeMetadata = (base?: AIMessage['metadata']): JsonValue =>
+      ({
+        ...(base || {}),
+        modelInfo: effectiveModelInfo,
+      }) as AIMessage['metadata'] as JsonValue;
+
+    // Build the UI messages to send to the model, ensuring rewrite/edit don't include
+    // messages that are about to be deleted from the context.
+    let priorMessages = chatWithMessages?.messages ?? [];
+
+    // If we're rewriting or editing, compute the slice so the model only sees messages
+    // up to (but not including) the target message being rewritten/edited.
+    if (trigger === 'message-rewrite' || trigger === 'message-edit') {
+      const originalIds = priorMessages.map(m => m.id);
+      // messageIdsToDelete[0] is the first id to delete, i.e., the target message id
+      const sliceIndex = originalIds.indexOf(messageIdsToDelete[0]);
+      if (sliceIndex > -1) {
+        priorMessages = priorMessages.slice(0, sliceIndex);
+      }
     }
 
-    const uiMessages = [
-      ...convertToUIMessages(chatWithMessages?.messages ?? []),
-      message,
-    ];
+    // For message-send and message-edit, append the (new/edited) user message.
+    // For message-rewrite, do NOT append the incoming message if it's the assistant target;
+    // the last prior message should already be the user turn prompting a fresh assistant reply.
+    const uiMessages =
+      trigger === 'message-send' || trigger === 'message-edit'
+        ? [...convertToUIMessages(priorMessages), message]
+        : convertToUIMessages(priorMessages);
 
     const memoryTools = createMemoryTools(userId);
 
@@ -201,27 +225,54 @@ export async function POST(req: Request) {
             sendReasoning: true,
             sendSources: true,
             onFinish: async ({ messages }) => {
-              await saveMessages({
-                messages: messages.map(message => ({
-                  chatId: id,
-                  role: message.role,
-                  modelId: modelInfo.modelId,
-                  parts: message.parts as JsonValue,
-                  metadata: message.metadata as JsonValue,
-                  attachmentUrls: [],
-                  id: message.id,
-                  createdAt: new Date(),
-                })),
-              });
+              const userMessages =
+                trigger === 'message-send' || trigger === 'message-edit'
+                  ? [
+                      {
+                        chatId: id,
+                        role: 'user',
+                        parts: message.parts as JsonValue,
+                        metadata: composeMetadata(
+                          message.metadata as AIMessage['metadata'],
+                        ),
+                        id: message.id,
+                        attachmentUrls: [],
+                        createdAt: new Date(),
+                      },
+                    ]
+                  : [];
+
+              // Delete any messages if needed (for rewrite or edit)
               if (messageIdsToDelete.length > 0) {
                 await deleteMessages(messageIdsToDelete);
               }
+
+              // Save all messages
+              const assistantAndToolMessages = messages.map(message => ({
+                chatId: id,
+                role: message.role,
+                parts: message.parts as JsonValue,
+                metadata: composeMetadata(
+                  message.metadata as AIMessage['metadata'],
+                ),
+                attachmentUrls: [],
+                id: message.id,
+                createdAt: new Date(),
+              }));
+
+              await saveMessages({
+                messages: [
+                  // Persist the (new/edited) user message first, then assistant/tool messages
+                  ...userMessages,
+                  ...assistantAndToolMessages,
+                ],
+              });
             },
             generateMessageId: generateId,
             messageMetadata: ({ part }) => {
               if (part.type === 'start') {
                 return {
-                  modelId: modelInfo.modelId,
+                  modelInfo: effectiveModelInfo,
                   requestStartTimeMs,
                   responseStartTimeMs: performance.now(),
                 };

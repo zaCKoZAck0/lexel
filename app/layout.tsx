@@ -1,22 +1,22 @@
 import type { Metadata } from 'next';
-import { Manrope, Roboto_Slab, IBM_Plex_Mono } from 'next/font/google';
+import { DM_Sans, Roboto_Slab, JetBrains_Mono } from 'next/font/google';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 
-const manrope = Manrope({
+const sans = DM_Sans({
   variable: '--font-sans',
   subsets: ['latin'],
 });
 
-const robotoSlab = Roboto_Slab({
+const serif = Roboto_Slab({
   variable: '--font-serif',
   display: 'swap',
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
+const mono = JetBrains_Mono({
   variable: '--font-mono',
   display: 'swap',
   subsets: ['latin'],
@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${manrope.variable} ${robotoSlab.variable} ${ibmPlexMono.variable} antialiased`}
+        className={`${sans.variable} ${serif.variable} ${mono.variable} antialiased`}
       >
         <Providers>
           {children}

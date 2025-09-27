@@ -7,6 +7,7 @@ export interface ApiKey {
   userId: string;
   provider: string;
   key: string; // plaintext exposed to UI after decryption (masked in display logic)
+  name?: string; // custom name for the API key
   default: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -16,12 +17,14 @@ export interface ApiKey {
 export const createApiKeySchema = z.object({
   provider: z.string().min(1, 'Provider is required'),
   key: z.string().min(1, 'API key is required'),
+  name: z.string().optional(),
   default: z.boolean().optional().default(false),
 });
 
 export const updateApiKeySchema = z.object({
   provider: z.string().optional(),
   key: z.string().optional(),
+  name: z.string().optional(),
   default: z.boolean().optional(),
 });
 

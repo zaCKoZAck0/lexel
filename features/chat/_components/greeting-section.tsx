@@ -21,7 +21,7 @@ export function GreetingSection({ hasMessages }: GreetingSectionProps) {
           className="text-center mb-6"
         >
           {session && session.user && (
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground/80 font-serif">
               {greetingText}
             </h1>
           )}
